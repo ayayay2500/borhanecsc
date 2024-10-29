@@ -16,46 +16,20 @@ export default function Home() {
   const [user, setUser] = useState<any>(null)
   const [error, setError] = useState<string | null>(null)
   const [notification, setNotification] = useState('')
-  const [countdown, setCountdown] = useState<number>(0)
-  const [isDisabled, setIsDisabled] = useState<boolean>(false)
+  const [isTaskDone, setIsTaskDone] = useState<boolean>(false) // الحالة لإظهار إذا تمت المهمة
+  const [isClaimed, setIsClaimed] = useState<boolean>(false) // الحالة لإظهار إذا تم استلام النقاط
 
   useEffect(() => {
-    const storedCountdown = localStorage.getItem('countdown');
-    const storedDisabled = localStorage.getItem('isDisabled');
-
-    if (storedCountdown) {
-      setCountdown(Number(storedCountdown));
+    const storedTaskStatus = localStorage.getItem('isTaskDone');
+    if (storedTaskStatus) {
+      setIsTaskDone(JSON.parse(storedTaskStatus));
     }
 
-    if (storedDisabled) {
-      setIsDisabled(JSON.parse(storedDisabled));
-    }
-
-    if (countdown > 0) {
-      const timer = setInterval(() => {
-        setCountdown(prev => {
-          if (prev <= 1) {
-            clearInterval(timer);
-            setIsDisabled(false);
-            localStorage.removeItem('countdown');
-            localStorage.removeItem('isDisabled');
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-
-      return () => clearInterval(timer);
-    }
-  }, [countdown]);
-
-  useEffect(() => {
     if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
-      const tg = window.Telegram.WebApp
-      tg.ready()
+      const tg = window.Telegram.WebApp;
+      tg.ready();
 
-      const initData = tg.initData || ''
-      const initDataUnsafe = tg.initDataUnsafe || {}
+      const initDataUnsafe = tg.initDataUnsafe || {};
 
       if (initDataUnsafe.user) {
         fetch('/api/user', {
@@ -68,24 +42,24 @@ export default function Home() {
           .then((res) => res.json())
           .then((data) => {
             if (data.error) {
-              setError(data.error)
+              setError(data.error);
             } else {
-              setUser(data)
+              setUser(data);
             }
           })
           .catch((err) => {
-            setError('Failed to fetch user data')
-          })
+            setError('Failed to fetch user data');
+          });
       } else {
-        setError('No user data available')
+        setError('No user data available');
       }
     } else {
-      setError('This app should be opened in Telegram')
+      setError('This app should be opened in Telegram');
     }
-  }, [])
+  }, []);
 
-  const handleIncreasePoints = async () => {
-    if (!user || isDisabled) return;
+  const handleClaimPoints = async () => {
+    if (!user || isClaimed) return;
 
     try {
       const res = await fetch('/api/increase-points', {
@@ -98,11 +72,10 @@ export default function Home() {
       const data = await res.json();
       if (data.success) {
         setUser({ ...user, points: data.points });
-        setNotification('Points increased successfully!');
-        setCountdown(60); // ضبط العد التنازلي إلى 60 ثانية
-        setIsDisabled(true); // تعطيل الزر
-        localStorage.setItem('countdown', '60');
-        localStorage.setItem('isDisabled', 'true');
+        setNotification('You have claimed 100 points!');
+        setIsClaimed(true); // تفعيل حالة استلام النقاط
+        setIsTaskDone(true); // تفعيل حالة تنفيذ المهمة
+        localStorage.setItem('isTaskDone', 'true'); // حفظ الحالة في localStorage
         setTimeout(() => setNotification(''), 3000);
       } else {
         setError('Failed to increase points');
@@ -110,6 +83,11 @@ export default function Home() {
     } catch (err) {
       setError('An error occurred while increasing points');
     }
+  }
+
+  const handleTaskCompletion = () => {
+    // توجيه المستخدم إلى يوتيوب
+    window.open('https://youtube.com', '_blank');
   }
 
   if (error) {
@@ -124,19 +102,27 @@ export default function Home() {
         <img src="/icon.png" alt="User Icon" className="user-icon" />
         <h1>{user.firstName}</h1>
       </div>
-      <p>Your current points: {user.points}</p>
-      <button
-        onClick={handleIncreasePoints}
-        className={`increase-points-button ${isDisabled ? 'disabled' : ''}`}
-        disabled={isDisabled}
-      >
-        {isDisabled ? `Wait ${countdown}s` : 'Increase Points'}
-      </button>
+
+      <div className="task-container">
+        <img src="/icon1.png" alt="Task Icon" className="task-icon" />
+        <h2>Complete the task to earn points!</h2>
+        <p>Earn 100 points by completing this task.</p>
+        {!isTaskDone ? (
+          <button onClick={handleTaskCompletion} className="task-button">
+            Complete Task
+          </button>
+        ) : (
+          <button onClick={handleClaimPoints} className={`task-button ${isClaimed ? 'done' : ''}`}>
+            {isClaimed ? 'Done' : 'Claim Points'}
+          </button>
+        )}
+      </div>
+
       {notification && (
         <div className="notification">
           {notification}
         </div>
       )}
     </div>
-  )
+  );
 }
