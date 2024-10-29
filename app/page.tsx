@@ -92,7 +92,7 @@ export default function Home() {
   }
 
   if (error) {
-    return <div className="container mx-auto p-4 text-red-500">{error}</div>
+    return <div className="container mx-auto p-4 text-danger">{error}</div>
   }
 
   if (!user) return <div className="container mx-auto p-4">Loading...</div>
@@ -120,7 +120,13 @@ export default function Home() {
               {completedTasks.includes(task.id) ? (
                 <button className="btn btn-success" disabled>Claimed</button>
               ) : (
-                <a href={task.url} target="_blank" rel="noopener noreferrer" className="btn btn-primary">
+                <a
+                  href={task.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => handleTaskClaim(task.id, task.points)}
+                  className="btn btn-primary"
+                >
                   {task.points} Points
                 </a>
               )}
