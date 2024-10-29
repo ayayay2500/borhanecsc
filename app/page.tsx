@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react'
 import { WebApp } from '@twa-dev/types'
-import './styles.css'
 
 declare global {
   interface Window {
@@ -86,7 +85,7 @@ export default function Home() {
     <div className="container mx-auto p-4 bg-dark-background text-white rounded-lg shadow-3xl">
       <div className="flex items-center mb-4">
         <img
-          src={user.photoUrl || '/default-profile.png'} // Use user’s profile image or a default
+          src="/icon1.png" // الصورة من ملف icon1.png
           alt={`${user.firstName}'s profile`}
           className="w-12 h-12 rounded-full mr-4 shadow-lg border-2 border-gray-300"
         />
