@@ -1,70 +1,51 @@
+/* General dark theme */
 body {
+  background-color: #1a1a2e;
   font-family: 'Arial', sans-serif;
-  background: linear-gradient(135deg, #3b3b58, #0a0a1f);
-  color: #f0f0f0;
-  margin: 0;
-  padding: 0;
+  color: #e0e0e0;
   display: flex;
   justify-content: center;
   align-items: center;
   height: 100vh;
-  overflow: hidden;
+  margin: 0;
 }
 
 .container {
-  text-align: center;
-  background: rgba(20, 20, 40, 0.8);
+  background-color: #252539;
   padding: 20px;
   border-radius: 15px;
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
-  transition: transform 0.2s;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.5);
 }
 
-.user-info {
-  margin-bottom: 20px;
+/* 3D Button style */
+button {
+  background: linear-gradient(145deg, #202034, #28284d);
+  box-shadow: 4px 4px 8px #141426, -4px -4px 8px #34345e;
+  transition: all 0.3s ease;
 }
 
-.user-icon {
-  width: 80px;
-  border-radius: 50%;
-  border: 2px solid #f0f0f0;
+button:hover {
+  transform: scale(1.05);
+  box-shadow: 6px 6px 12px #141426, -6px -6px 12px #34345e;
 }
 
-.increase-points-image {
-  width: 100px; /* تغيير حجم الصورة */
-  margin-top: 20px;
-  transition: transform 0.2s, filter 0.2s;
-  cursor: pointer;
+/* Notification style */
+.mt-6 {
+  background-color: #4caf50;
+  color: white;
+  border-radius: 8px;
+  padding: 8px 12px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
-.increase-points-image:hover {
-  transform: scale(1.1);
-  filter: brightness(1.2);
+/* Profile Image style */
+img.rounded-full {
+  border: 3px solid #555;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.4);
 }
 
-.notification {
-  margin-top: 10px;
-  background: rgba(30, 180, 30, 0.8);
-  padding: 10px;
-  border-radius: 5px;
-}
-
-.error {
-  color: #ff4d4d;
-}
-
-.loading {
-  color: #f0e68c;
-}
-
-.shake {
-  animation: shake 0.5s forwards;
-}
-
-@keyframes shake {
-  0% { transform: translate(0); }
-  25% { transform: translate(-5px, 0); }
-  50% { transform: translate(5px, 0); }
-  75% { transform: translate(-5px, 0); }
-  100% { transform: translate(0); }
+/* Highlight Points */
+.text-blue-300 {
+  color: #42a5f5;
+  font-weight: bold;
 }
