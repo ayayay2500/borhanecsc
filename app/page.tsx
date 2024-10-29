@@ -26,7 +26,7 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null)
   const [notification, setNotification] = useState('')
   const [tasks, setTasks] = useState<Task[]>([
-    { id: 1, title: 'YouTube', image: '/icon1.png', points: 100, link: 'https://www.youtube.com/', claimed: false },
+    { id: 1, title: 'ملخص مبارة الجزائر وكوتديفوار', image: '/icon1.png', points: 100, link: 'https://www.youtube.com/', claimed: false },
     { id: 2, title: 'TikTok', image: '/icon2.png', points: 100, link: 'https://www.tiktok.com/', claimed: false },
     { id: 3, title: 'Telegram Channel', image: '/icon3.png', points: 100, link: 'https://t.me/yourchannel', claimed: false },
   ]);
