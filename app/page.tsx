@@ -1,9 +1,8 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { FaWallet, FaYoutube } from 'react-icons/fa' // استيراد الرموز من react-icons
 import { WebApp } from '@twa-dev/types'
-import 'bootstrap/dist/css/bootstrap.min.css'
-import { FaWallet, FaYoutube } from 'react-icons/fa'
 
 declare global {
   interface Window {
@@ -17,7 +16,7 @@ export default function Home() {
   const [user, setUser] = useState<any>(null)
   const [error, setError] = useState<string | null>(null)
   const [notification, setNotification] = useState('')
-  const [completedTasks, setCompletedTasks] = useState<string[]>([])
+  const [taskStatus, setTaskStatus] = useState({ task1: false, task2: false, task3: false })
 
   useEffect(() => {
     if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
@@ -43,7 +42,7 @@ export default function Home() {
               setUser(data)
             }
           })
-          .catch((err) => {
+          .catch(() => {
             setError('Failed to fetch user data')
           })
       } else {
@@ -54,7 +53,7 @@ export default function Home() {
     }
   }, [])
 
-  const handleIncreasePoints = async (points) => {
+  const handleIncreasePoints = async () => {
     if (!user) return
 
     try {
@@ -63,7 +62,7 @@ export default function Home() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ telegramId: user.telegramId, points }),
+        body: JSON.stringify({ telegramId: user.telegramId }),
       })
       const data = await res.json()
       if (data.success) {
@@ -73,70 +72,59 @@ export default function Home() {
       } else {
         setError('Failed to increase points')
       }
-    } catch (err) {
+    } catch {
       setError('An error occurred while increasing points')
     }
   }
 
-  const tasks = [
-    { id: 'task1', title: 'Watch YouTube Video 1', points: 100, url: 'https://youtube.com' },
-    { id: 'task2', title: 'Watch YouTube Video 2', points: 200, url: 'https://youtube.com' },
-    { id: 'task3', title: 'Watch YouTube Video 3', points: 300, url: 'https://youtube.com' },
-  ]
-
-  const handleTaskClaim = (taskId, points) => {
-    if (!completedTasks.includes(taskId)) {
-      handleIncreasePoints(points)
-      setCompletedTasks([...completedTasks, taskId])
+  const handleClaimTask = (task: string) => {
+    if (!taskStatus[task]) {
+      setTaskStatus({ ...taskStatus, [task]: true })
+      handleIncreasePoints()
     }
   }
 
   if (error) {
-    return <div className="container mx-auto p-4 text-danger">{error}</div>
+    return <div className="container mx-auto p-4 text-red-500">{error}</div>
   }
 
   if (!user) return <div className="container mx-auto p-4">Loading...</div>
 
   return (
     <div className="container mx-auto p-4">
-      <div className="d-flex align-items-center mb-4">
-        <img src={user.photoUrl} alt="User" className="rounded-circle me-2" width="50" height="50" />
+      <div className="flex items-center mb-4">
+        <img
+          src={user.photoUrl || '/default-profile.png'}
+          alt="User profile"
+          className="rounded-full w-12 h-12 mr-4"
+        />
         <h1 className="text-2xl font-bold">{user.firstName}</h1>
       </div>
-
-      <div className="mb-4">
-        <FaWallet className="me-2" />
-        <span className="font-bold">Balance:</span> {user.points}
+      <div className="flex items-center mb-4">
+        <FaWallet className="mr-2 text-gray-700" />
+        <p className="text-lg">Balance: {user.points}</p>
       </div>
-
-      <div className="my-5">
-        {tasks.map((task) => (
-          <div key={task.id} className="card mb-3">
-            <div className="card-body d-flex justify-content-between align-items-center">
-              <div className="d-flex align-items-center">
-                <FaYoutube className="me-2 text-danger" />
-                <span>{task.title}</span>
-              </div>
-              {completedTasks.includes(task.id) ? (
-                <button className="btn btn-success" disabled>Claimed</button>
-              ) : (
-                <a
-                  href={task.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={() => handleTaskClaim(task.id, task.points)}
-                  className="btn btn-primary"
-                >
-                  {task.points} Points
-                </a>
-              )}
-            </div>
+      
+      <div className="flex flex-col items-center space-y-4 mt-8">
+        {['task1', 'task2', 'task3'].map((task, index) => (
+          <div key={task} className="flex items-center bg-gray-200 p-4 rounded-lg w-80 justify-between">
+            <FaYoutube className="text-red-600 text-3xl" />
+            <p className="text-lg font-semibold">Task {index + 1}</p>
+            <button
+              onClick={() => handleClaimTask(task)}
+              disabled={taskStatus[task]}
+              className={`${
+                taskStatus[task] ? 'bg-green-500' : 'bg-blue-500'
+              } text-white font-bold py-2 px-4 rounded`}
+            >
+              {taskStatus[task] ? 'Claimed' : '100 Points'}
+            </button>
           </div>
         ))}
       </div>
 
       {notification && (
-        <div className="alert alert-success mt-4">
+        <div className="mt-4 p-2 bg-green-100 text-green-700 rounded">
           {notification}
         </div>
       )}
