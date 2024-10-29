@@ -1,72 +1,77 @@
 /* styles.css */
 body {
-    background-color: #1e1e2f; /* خلفية داكنة */
-    color: #ffffff; /* نص أبيض */
-    font-family: 'Arial', sans-serif; /* خط أنيق */
+    background-color: #1e1e2f; 
+    color: #ffffff; 
+    font-family: 'Arial', sans-serif; 
     margin: 0;
     padding: 0;
 }
 
 .container {
-    max-width: 600px; /* عرض أقصى لتحسين القراءة */
-    margin: 0 auto; /* مركز الحاوية */
+    max-width: 600px; 
+    margin: 0 auto; 
     padding: 20px;
-    border-radius: 10px; /* زوايا مستديرة */
-    background-color: #2a2a3b; /* خلفية داكنة للحاوية */
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5); /* ظل خفيف */
+    border-radius: 10px; 
+    background-color: #2a2a3b; 
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5); 
 }
 
 .user-info {
-    display: flex; /* استخدام الفليكس لعرض الصورة والنص */
-    align-items: center; /* محاذاة العناصر عموديًا */
-    margin-bottom: 20px; /* مسافة أسفل معلومات المستخدم */
+    display: flex; 
+    align-items: center; 
+    margin-bottom: 20px; 
 }
 
 .user-icon {
-    width: 50px; /* عرض الصورة */
-    height: 50px; /* ارتفاع الصورة */
-    border-radius: 50%; /* صورة دائرية */
-    margin-right: 10px; /* مسافة بين الصورة والنص */
+    width: 50px; 
+    height: 50px; 
+    border-radius: 50%; 
+    margin-right: 10px; 
 }
 
 h1 {
-    color: #4caf50; /* لون أخضر لاسم المستخدم */
-    font-size: 24px; /* حجم خط أكبر لاسم المستخدم */
+    color: #4caf50; 
+    font-size: 24px; 
 }
 
 p {
-    margin: 10px 0; /* مسافة بين الفقرات */
+    margin: 10px 0; 
 }
 
 .increase-points-button {
-    background-color: #007bff; /* لون أزرق */
-    border: none; /* إزالة الحدود الافتراضية */
-    border-radius: 5px; /* زوايا مستديرة */
-    color: #fff; /* نص أبيض */
-    font-size: 16px; /* حجم نص أكبر */
-    padding: 10px 20px; /* حشو داخل الزر */
-    cursor: pointer; /* مؤشر على شكل يد عند التمرير */
-    transition: background-color 0.3s ease; /* انتقال سلس */
+    background-color: #007bff; 
+    border: none; 
+    border-radius: 5px; 
+    color: #fff; 
+    font-size: 16px; 
+    padding: 10px 20px; 
+    cursor: pointer; 
+    transition: background-color 0.3s ease; 
 }
 
 .increase-points-button:hover {
-    background-color: #0056b3; /* لون أزرق داكن عند التمرير */
+    background-color: #0056b3; 
+}
+
+.increase-points-button.disabled {
+    background-color: #ccc; /* اللون الرمادي عند التعطيل */
+    cursor: not-allowed; /* شكل المؤشر يشير إلى عدم إمكانية الضغط */
 }
 
 .notification {
-    margin-top: 10px; /* مسافة فوق الإشعارات */
-    padding: 10px; /* حشو داخل الإشعار */
-    border-radius: 5px; /* زوايا مستديرة */
-    background-color: #4caf50; /* خلفية خضراء */
-    color: white; /* نص أبيض */
+    margin-top: 10px; 
+    padding: 10px; 
+    border-radius: 5px; 
+    background-color: #4caf50; 
+    color: white; 
 }
 
 .error {
-    color: #f44336; /* لون أحمر لرسائل الأخطاء */
+    color: #f44336; 
 }
 
 .loading {
-    text-align: center; /* محاذاة النص في الوسط */
-    font-size: 18px; /* حجم نص أكبر */
-    color: #ccc; /* لون رمادي فاتح */
+    text-align: center; 
+    font-size: 18px; 
+    color: #ccc; 
 }
