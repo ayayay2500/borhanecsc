@@ -82,7 +82,7 @@ export default function Home() {
     if (!user) return;
 
     // تحديث حالة المهمة
-    const updatedTasks = tasks.map(task =>
+    const updatedTasks = tasks.map(task => 
       task.id === taskId ? { ...task, claimed: true } : task
     );
 
@@ -94,12 +94,13 @@ export default function Home() {
 
     // إرسال النقاط إلى الخادم
     try {
+      const task = updatedTasks.find(t => t.id === taskId); // الحصول على المهمة
       const res = await fetch('/api/increase-points', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ telegramId: user.telegramId, points: updatedTasks.find(task => task.id === taskId)?.points }),
+        body: JSON.stringify({ telegramId: user.telegramId, points: task?.points }), // استلام عدد النقاط المحددة
       });
 
       const data = await res.json();
@@ -116,7 +117,7 @@ export default function Home() {
   }
 
   const handleGoToTask = (taskId: number) => {
-    // عند الذهاب إلى المهمة، تغيير حالة المهمة ليصبح "Claim"
+    // عند الذهاب إلى المهمة، يتم حفظ حالة المهمة كمطالبات
     const updatedTasks = tasks.map(task => 
       task.id === taskId ? { ...task, claimed: false } : task
     );
