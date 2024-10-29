@@ -1,63 +1,72 @@
-
 /* styles.css */
 body {
-    background-color: #1e1e2f; /* Dark background */
-    color: #ffffff; /* White text */
-    font-family: 'Arial', sans-serif; /* Clean font */
+    background-color: #1e1e2f; /* خلفية داكنة */
+    color: #ffffff; /* نص أبيض */
+    font-family: 'Arial', sans-serif; /* خط أنيق */
     margin: 0;
     padding: 0;
 }
 
 .container {
-    max-width: 600px; /* Set a max width for better readability */
-    margin: 0 auto; /* Center container */
+    max-width: 600px; /* عرض أقصى لتحسين القراءة */
+    margin: 0 auto; /* مركز الحاوية */
     padding: 20px;
-    border-radius: 10px; /* Rounded corners */
-    background-color: #2a2a3b; /* Darker container background */
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5); /* Subtle shadow */
+    border-radius: 10px; /* زوايا مستديرة */
+    background-color: #2a2a3b; /* خلفية داكنة للحاوية */
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5); /* ظل خفيف */
+}
+
+.user-info {
+    display: flex; /* استخدام الفليكس لعرض الصورة والنص */
+    align-items: center; /* محاذاة العناصر عموديًا */
+    margin-bottom: 20px; /* مسافة أسفل معلومات المستخدم */
+}
+
+.user-icon {
+    width: 50px; /* عرض الصورة */
+    height: 50px; /* ارتفاع الصورة */
+    border-radius: 50%; /* صورة دائرية */
+    margin-right: 10px; /* مسافة بين الصورة والنص */
 }
 
 h1 {
-    color: #4caf50; /* Green accent color for the title */
+    color: #4caf50; /* لون أخضر لاسم المستخدم */
+    font-size: 24px; /* حجم خط أكبر لاسم المستخدم */
 }
 
 p {
-    margin: 10px 0; /* Spacing between paragraphs */
+    margin: 10px 0; /* مسافة بين الفقرات */
 }
 
-button {
-    background-color: #007bff; /* Bootstrap blue */
-    border: none; /* Remove default border */
-    border-radius: 5px; /* Rounded corners */
-    color: #fff; /* White text */
-    font-size: 16px; /* Slightly larger text */
-    padding: 10px 20px; /* Spacing inside button */
-    cursor: pointer; /* Pointer cursor on hover */
-    transition: background-color 0.3s ease; /* Smooth transition */
+.increase-points-button {
+    background-color: #007bff; /* لون أزرق */
+    border: none; /* إزالة الحدود الافتراضية */
+    border-radius: 5px; /* زوايا مستديرة */
+    color: #fff; /* نص أبيض */
+    font-size: 16px; /* حجم نص أكبر */
+    padding: 10px 20px; /* حشو داخل الزر */
+    cursor: pointer; /* مؤشر على شكل يد عند التمرير */
+    transition: background-color 0.3s ease; /* انتقال سلس */
 }
 
-button:hover {
-    background-color: #0056b3; /* Darker blue on hover */
-}
-
-button:focus {
-    outline: none; /* Remove outline */
+.increase-points-button:hover {
+    background-color: #0056b3; /* لون أزرق داكن عند التمرير */
 }
 
 .notification {
-    margin-top: 10px; /* Spacing above notifications */
-    padding: 10px; /* Padding inside notification */
-    border-radius: 5px; /* Rounded corners */
-    background-color: #4caf50; /* Green background */
-    color: white; /* White text */
+    margin-top: 10px; /* مسافة فوق الإشعارات */
+    padding: 10px; /* حشو داخل الإشعار */
+    border-radius: 5px; /* زوايا مستديرة */
+    background-color: #4caf50; /* خلفية خضراء */
+    color: white; /* نص أبيض */
 }
 
 .error {
-    color: #f44336; /* Red color for error messages */
+    color: #f44336; /* لون أحمر لرسائل الأخطاء */
 }
 
 .loading {
-    text-align: center; /* Center loading text */
-    font-size: 18px; /* Larger loading text */
-    color: #ccc; /* Light gray color */
+    text-align: center; /* محاذاة النص في الوسط */
+    font-size: 18px; /* حجم نص أكبر */
+    color: #ccc; /* لون رمادي فاتح */
 }
