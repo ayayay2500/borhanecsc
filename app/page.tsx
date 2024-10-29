@@ -85,7 +85,7 @@ export default function Home() {
     <div className="container mx-auto p-4 bg-dark-background text-white rounded-lg shadow-3xl">
       <div className="flex items-center mb-4">
         <img
-          src="/icon1.png" // الصورة من ملف icon1.png
+          src="/icon2.png" // الصورة من ملف icon1.png
           alt={`${user.firstName}'s profile`}
           className="w-12 h-12 rounded-full mr-4 shadow-lg border-2 border-gray-300"
         />
