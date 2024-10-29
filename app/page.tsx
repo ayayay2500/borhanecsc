@@ -61,6 +61,18 @@ export default function Home() {
       } else {
         setError('No user data available')
       }
+
+      // استرجاع حالة المهام من التخزين المحلي
+      const storedTasks = localStorage.getItem('claimedTasks');
+      if (storedTasks) {
+        const claimedTasks = JSON.parse(storedTasks);
+        setTasks(prevTasks =>
+          prevTasks.map(task => ({
+            ...task,
+            claimed: claimedTasks.includes(task.id),
+          }))
+        );
+      }
     } else {
       setError('This app should be opened in Telegram')
     }
@@ -70,11 +82,15 @@ export default function Home() {
     if (!user) return;
 
     // تحديث حالة المهمة
-    const updatedTasks = tasks.map(task => 
+    const updatedTasks = tasks.map(task =>
       task.id === taskId ? { ...task, claimed: true } : task
     );
 
     setTasks(updatedTasks);
+
+    // حفظ حالة المهام في التخزين المحلي
+    const claimedTasks = updatedTasks.filter(task => task.claimed).map(task => task.id);
+    localStorage.setItem('claimedTasks', JSON.stringify(claimedTasks));
 
     // إرسال النقاط إلى الخادم
     try {
@@ -118,19 +134,26 @@ export default function Home() {
           <div key={task.id} className="task-card">
             <img src={task.image} alt={task.title} className="task-image" />
             <h2 className="task-title">{task.title}</h2>
-            <a href={task.link} target="_blank" rel="noopener noreferrer" className="task-button">
+            <a href={task.link} target="_blank" rel="noopener noreferrer" className="task-button" onClick={() => {
+              // تحديث حالة المهمة عند الذهاب إلى المهمة
+              const updatedTasks = tasks.map(t => 
+                t.id === task.id ? { ...t, claimed: false } : t
+              );
+              setTasks(updatedTasks);
+              localStorage.setItem('claimedTasks', JSON.stringify(updatedTasks.filter(t => t.claimed).map(t => t.id)));
+            }}>
               Go to Task
             </a>
-            {!task.claimed ? (
+            {task.claimed ? (
+              <button className="done-button" disabled>
+                Done ✅
+              </button>
+            ) : (
               <button
                 onClick={() => handleClaimPoints(task.id)}
                 className="claim-button"
               >
                 Claim {task.points} Points
-              </button>
-            ) : (
-              <button className="done-button" disabled>
-                Done ✅
               </button>
             )}
           </div>
