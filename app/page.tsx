@@ -77,10 +77,30 @@ export default function Home() {
         return;
     }
 
+    // Update points and mark the code as used
     setPointsReceived(pointsToAdd);
     setUsedCodes(new Set(usedCodes.add(inputCode)));
     setNotification(`You've received ${pointsToAdd} points!`);
     setTimeout(() => setNotification(''), 3000);
+    
+    // Send points to the API
+    fetch('/api/increase-points', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ userId: user.id, points: pointsToAdd }),
+    })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          console.log('Points updated successfully.');
+        } else {
+          console.error('Error updating points:', data.error);
+        }
+      })
+      .catch(error => console.error('API error:', error));
+
     setInputCode('');
   }
 
