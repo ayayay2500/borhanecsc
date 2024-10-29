@@ -12,42 +12,24 @@ declare global {
   }
 }
 
+interface Task {
+  id: number;
+  title: string;
+  image: string;
+  points: number;
+  link: string;
+  claimed: boolean; // لحفظ حالة استلام النقاط
+}
+
 export default function Home() {
   const [user, setUser] = useState<any>(null)
   const [error, setError] = useState<string | null>(null)
   const [notification, setNotification] = useState('')
-  const [countdown, setCountdown] = useState<number>(0)
-  const [isDisabled, setIsDisabled] = useState<boolean>(false)
-
-  useEffect(() => {
-    const storedCountdown = localStorage.getItem('countdown');
-    const storedDisabled = localStorage.getItem('isDisabled');
-
-    if (storedCountdown) {
-      setCountdown(Number(storedCountdown));
-    }
-
-    if (storedDisabled) {
-      setIsDisabled(JSON.parse(storedDisabled));
-    }
-
-    if (countdown > 0) {
-      const timer = setInterval(() => {
-        setCountdown(prev => {
-          if (prev <= 1) {
-            clearInterval(timer);
-            setIsDisabled(false);
-            localStorage.removeItem('countdown');
-            localStorage.removeItem('isDisabled');
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-
-      return () => clearInterval(timer);
-    }
-  }, [countdown]);
+  const [tasks, setTasks] = useState<Task[]>([
+    { id: 1, title: 'YouTube', image: '/icon1.png', points: 100, link: 'https://www.youtube.com/', claimed: false },
+    { id: 2, title: 'TikTok', image: '/icon2.png', points: 100, link: 'https://www.tiktok.com/', claimed: false },
+    { id: 3, title: 'Telegram Channel', image: '/icon3.png', points: 100, link: 'https://t.me/yourchannel', claimed: false },
+  ]);
 
   useEffect(() => {
     if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
@@ -84,31 +66,36 @@ export default function Home() {
     }
   }, [])
 
-  const handleIncreasePoints = async () => {
-    if (!user || isDisabled) return;
+  const handleClaimPoints = async (taskId: number) => {
+    if (!user) return;
 
+    // تحديث حالة المهمة
+    const updatedTasks = tasks.map(task => 
+      task.id === taskId ? { ...task, claimed: true } : task
+    );
+
+    setTasks(updatedTasks);
+
+    // إرسال النقاط إلى الخادم
     try {
       const res = await fetch('/api/increase-points', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ telegramId: user.telegramId }),
+        body: JSON.stringify({ telegramId: user.telegramId, points: updatedTasks.find(task => task.id === taskId)?.points }),
       });
+
       const data = await res.json();
       if (data.success) {
         setUser({ ...user, points: data.points });
-        setNotification('Points increased successfully!');
-        setCountdown(60); // ضبط العد التنازلي إلى 60 ثانية
-        setIsDisabled(true); // تعطيل الزر
-        localStorage.setItem('countdown', '60');
-        localStorage.setItem('isDisabled', 'true');
+        setNotification('Points claimed successfully!');
         setTimeout(() => setNotification(''), 3000);
       } else {
-        setError('Failed to increase points');
+        setError('Failed to claim points');
       }
     } catch (err) {
-      setError('An error occurred while increasing points');
+      setError('An error occurred while claiming points');
     }
   }
 
@@ -125,13 +112,31 @@ export default function Home() {
         <h1>{user.firstName}</h1>
       </div>
       <p>Your current points: {user.points}</p>
-      <button
-        onClick={handleIncreasePoints}
-        className={`increase-points-button ${isDisabled ? 'disabled' : ''}`}
-        disabled={isDisabled}
-      >
-        {isDisabled ? `Wait ${countdown}s` : 'Increase Points'}
-      </button>
+
+      <div className="tasks-container">
+        {tasks.map((task) => (
+          <div key={task.id} className="task-card">
+            <img src={task.image} alt={task.title} className="task-image" />
+            <h2 className="task-title">{task.title}</h2>
+            <a href={task.link} target="_blank" rel="noopener noreferrer" className="task-button">
+              Go to Task
+            </a>
+            {!task.claimed ? (
+              <button
+                onClick={() => handleClaimPoints(task.id)}
+                className="claim-button"
+              >
+                Claim {task.points} Points
+              </button>
+            ) : (
+              <button className="done-button" disabled>
+                Done ✅
+              </button>
+            )}
+          </div>
+        ))}
+      </div>
+
       {notification && (
         <div className="notification">
           {notification}
