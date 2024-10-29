@@ -82,17 +82,24 @@ export default function Home() {
   if (!user) return <div className="container mx-auto p-4">Loading...</div>
 
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">{user.firstName}!</h1>
-      <p>Your current points: {user.points}</p>
+    <div className="container mx-auto p-4 bg-dark-background text-white rounded-lg shadow-3xl">
+      <div className="flex items-center mb-4">
+        <img
+          src={user.photoUrl || '/default-profile.png'} // Use user’s profile image or a default
+          alt={`${user.firstName}'s profile`}
+          className="w-12 h-12 rounded-full mr-4 shadow-lg border-2 border-gray-300"
+        />
+        <h1 className="text-3xl font-bold">{user.firstName}!</h1>
+      </div>
+      <p>Your current points: <span className="text-blue-300 font-semibold">{user.points}</span></p>
       <button
         onClick={handleIncreasePoints}
-        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-4"
+        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-full shadow-lg transform transition duration-300 hover:scale-105 mt-6"
       >
         Increase Points
       </button>
       {notification && (
-        <div className="mt-4 p-2 bg-green-100 text-green-700 rounded">
+        <div className="mt-6 p-3 bg-green-600 text-white rounded-md shadow-md">
           {notification}
         </div>
       )}
