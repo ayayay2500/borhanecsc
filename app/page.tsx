@@ -96,7 +96,7 @@ export default function Home() {
         onClick={handleIncreasePoints}
         className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-full shadow-lg transform transition duration-300 hover:scale-105 mt-6"
       >
-        Increase Points
+        Tap Tap Tap 
       </button>
       {notification && (
         <div className="mt-6 p-3 bg-green-600 text-white rounded-md shadow-md">
