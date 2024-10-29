@@ -115,6 +115,15 @@ export default function Home() {
     }
   }
 
+  const handleGoToTask = (taskId: number) => {
+    // عند الذهاب إلى المهمة، تحديث حالة المهمة بحيث يكون الزر في حالة "Claim"
+    setTasks(prevTasks =>
+      prevTasks.map(task =>
+        task.id === taskId ? { ...task, claimed: false } : task
+      )
+    );
+  }
+
   if (error) {
     return <div className="container error">{error}</div>
   }
@@ -134,14 +143,7 @@ export default function Home() {
           <div key={task.id} className="task-card">
             <img src={task.image} alt={task.title} className="task-image" />
             <h2 className="task-title">{task.title}</h2>
-            <a href={task.link} target="_blank" rel="noopener noreferrer" className="task-button" onClick={() => {
-              // تحديث حالة المهمة عند الذهاب إلى المهمة
-              const updatedTasks = tasks.map(t => 
-                t.id === task.id ? { ...t, claimed: false } : t
-              );
-              setTasks(updatedTasks);
-              localStorage.setItem('claimedTasks', JSON.stringify(updatedTasks.filter(t => t.claimed).map(t => t.id)));
-            }}>
+            <a href={task.link} target="_blank" rel="noopener noreferrer" className="task-button" onClick={() => handleGoToTask(task.id)}>
               Go to Task
             </a>
             {task.claimed ? (
