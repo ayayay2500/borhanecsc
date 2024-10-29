@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { FaWallet, FaYoutube } from 'react-icons/fa' // استيراد الرموز من react-icons
 import { WebApp } from '@twa-dev/types'
 
 declare global {
@@ -23,7 +22,6 @@ export default function Home() {
       const tg = window.Telegram.WebApp
       tg.ready()
 
-      const initData = tg.initData || ''
       const initDataUnsafe = tg.initDataUnsafe || {}
 
       if (initDataUnsafe.user) {
@@ -101,14 +99,12 @@ export default function Home() {
         <h1 className="text-2xl font-bold">{user.firstName}</h1>
       </div>
       <div className="flex items-center mb-4">
-        <FaWallet className="mr-2 text-gray-700" />
         <p className="text-lg">Balance: {user.points}</p>
       </div>
       
       <div className="flex flex-col items-center space-y-4 mt-8">
         {['task1', 'task2', 'task3'].map((task, index) => (
           <div key={task} className="flex items-center bg-gray-200 p-4 rounded-lg w-80 justify-between">
-            <FaYoutube className="text-red-600 text-3xl" />
             <p className="text-lg font-semibold">Task {index + 1}</p>
             <button
               onClick={() => handleClaimTask(task)}
@@ -124,9 +120,7 @@ export default function Home() {
       </div>
 
       {notification && (
-        <div className="mt-4 p-2 bg-green-100 text-green-700 rounded">
-          {notification}
-        </div>
+        <div className="mt-4 p-2 bg-green-100 text-green-700">{notification}</div>
       )}
     </div>
   )
