@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from 'react'
 import { WebApp } from '@twa-dev/types'
+import 'bootstrap/dist/css/bootstrap.min.css'
+import { FaWallet, FaYoutube } from 'react-icons/fa'
 
 declare global {
   interface Window {
@@ -15,6 +17,7 @@ export default function Home() {
   const [user, setUser] = useState<any>(null)
   const [error, setError] = useState<string | null>(null)
   const [notification, setNotification] = useState('')
+  const [completedTasks, setCompletedTasks] = useState<string[]>([])
 
   useEffect(() => {
     if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
@@ -51,7 +54,7 @@ export default function Home() {
     }
   }, [])
 
-  const handleIncreasePoints = async () => {
+  const handleIncreasePoints = async (points) => {
     if (!user) return
 
     try {
@@ -60,7 +63,7 @@ export default function Home() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ telegramId: user.telegramId }),
+        body: JSON.stringify({ telegramId: user.telegramId, points }),
       })
       const data = await res.json()
       if (data.success) {
@@ -75,6 +78,19 @@ export default function Home() {
     }
   }
 
+  const tasks = [
+    { id: 'task1', title: 'Watch YouTube Video 1', points: 100, url: 'https://youtube.com' },
+    { id: 'task2', title: 'Watch YouTube Video 2', points: 200, url: 'https://youtube.com' },
+    { id: 'task3', title: 'Watch YouTube Video 3', points: 300, url: 'https://youtube.com' },
+  ]
+
+  const handleTaskClaim = (taskId, points) => {
+    if (!completedTasks.includes(taskId)) {
+      handleIncreasePoints(points)
+      setCompletedTasks([...completedTasks, taskId])
+    }
+  }
+
   if (error) {
     return <div className="container mx-auto p-4 text-red-500">{error}</div>
   }
@@ -83,16 +99,38 @@ export default function Home() {
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Welcome, {user.firstName}!</h1>
-      <p>Your current points: {user.points}</p>
-      <button
-        onClick={handleIncreasePoints}
-        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-4"
-      >
-        Increase Points
-      </button>
+      <div className="d-flex align-items-center mb-4">
+        <img src={user.photoUrl} alt="User" className="rounded-circle me-2" width="50" height="50" />
+        <h1 className="text-2xl font-bold">{user.firstName}</h1>
+      </div>
+
+      <div className="mb-4">
+        <FaWallet className="me-2" />
+        <span className="font-bold">Balance:</span> {user.points}
+      </div>
+
+      <div className="my-5">
+        {tasks.map((task) => (
+          <div key={task.id} className="card mb-3">
+            <div className="card-body d-flex justify-content-between align-items-center">
+              <div className="d-flex align-items-center">
+                <FaYoutube className="me-2 text-danger" />
+                <span>{task.title}</span>
+              </div>
+              {completedTasks.includes(task.id) ? (
+                <button className="btn btn-success" disabled>Claimed</button>
+              ) : (
+                <a href={task.url} target="_blank" rel="noopener noreferrer" className="btn btn-primary">
+                  {task.points} Points
+                </a>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+
       {notification && (
-        <div className="mt-4 p-2 bg-green-100 text-green-700 rounded">
+        <div className="alert alert-success mt-4">
           {notification}
         </div>
       )}
