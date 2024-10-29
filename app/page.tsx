@@ -41,13 +41,13 @@ export default function Home() {
             }
           })
           .catch((err) => {
-            setError('Failed to fetch user data')
+            setError('فشل حفض معلومات المستخدم')
           })
       } else {
-        setError('No user data available')
+        setError('مكانش معلومات مستخدم متاحة')
       }
     } else {
-      setError('This app should be opened in Telegram')
+      setError('من فضلك افت البوت على تلجرام')
     }
   }, [])
 
@@ -65,13 +65,13 @@ export default function Home() {
       const data = await res.json()
       if (data.success) {
         setUser({ ...user, points: data.points })
-        setNotification('Points increased successfully!')
+        setNotification('بصحتك ')
         setTimeout(() => setNotification(''), 3000)
       } else {
-        setError('Failed to increase points')
+        setError('فشل اضافة رصيد')
       }
     } catch (err) {
-      setError('An error occurred while increasing points')
+      setError('مشكل في حفض الرصيد الخاص بك')
     }
   }
 
@@ -79,7 +79,7 @@ export default function Home() {
     return <div className="container mx-auto p-4 text-red-500">{error}</div>
   }
 
-  if (!user) return <div className="container mx-auto p-4">Loading...</div>
+  if (!user) return <div className="container mx-auto p-4">...لاتقلق</div>
 
   return (
     <div className="container mx-auto p-4 bg-dark-background text-white rounded-lg shadow-3xl">
@@ -91,7 +91,7 @@ export default function Home() {
         />
         <h1 className="text-3xl font-bold">{user.firstName}!</h1>
       </div>
-      <p>Your current points: <span className="text-blue-300 font-semibold">{user.points}</span></p>
+      <p>Balance: <span className="text-blue-300 font-semibold">{user.points}</span></p>
       <button
         onClick={handleIncreasePoints}
         className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-full shadow-lg transform transition duration-300 hover:scale-105 mt-6"
