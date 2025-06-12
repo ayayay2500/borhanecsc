@@ -213,15 +213,6 @@ export default function Home() {
 
       {/* زر النقر الرئيسي */}
     
-      <button
-        onClick={handleTap}
-        className={`main-button ${isTapping ? 'tapping' : ''} ${combo >= 2 ? 'combo-active' : ''}`}
-        disabled={isTapping}
-      >
-        {combo >= 5 ? 'قوفيندييه! 🔥' : 
-         combo >= 3 ? 'أنت قوفيندار 🔥' : 
-         'كبس يولد!'}
-      </button>
       {/* الإشعارات */}
       {notification && (
         <div className={`notification ${combo >= 5 ? 'combo-notification' : ''}`}>
