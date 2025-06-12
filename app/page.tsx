@@ -156,7 +156,7 @@ export default function Home() {
       <div className="loading-container">
         <div className="loading-spinner"></div>
         <div className="loading-text">جاري التحميل...</div>
-        <div className="loading-hint">لا تقلق، البيانات تأخذ بعض الوقت</div>
+        <div className="loading-hint">ما تقلقش اودي 🤣</div>
       </div>
     )
   }
@@ -200,8 +200,8 @@ export default function Home() {
         </div>
         <div className="balance-stats">
           <div className="stat-item">
-            <span>النقرات اليوم</span>
-            <span>{tapCount}</span>
+            <span>لا اله الا الله محمد رسول الله</span>
+
           </div>
           {combo > 0 && (
             <div className="combo-indicator">
@@ -223,7 +223,7 @@ export default function Home() {
 
       {/* معلومات إضافية */}
       <div className="hint-text">
-        كل نقرة = +1 نقطة | الكومبو يعطيك نقاط إضافية!
+      Devloped By Borhane San
       </div>
     </div>
   )
