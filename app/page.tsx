@@ -215,12 +215,12 @@ export default function Home() {
     
       <button
         onClick={handleTap}
-        className={`main-button ${isTapping ? 'tapping' : ''} ${combo >= 1 ? 'combo-active' : ''}`}
+        className={`main-button ${isTapping ? 'tapping' : ''} ${combo >= 2 ? 'combo-active' : ''}`}
         disabled={isTapping}
       >
         {combo >= 5 ? 'قوفيندييه! 🔥' : 
          combo >= 3 ? 'أنت قوفيندار 🔥' : 
-         'اضغط هنا!'}
+         'كبس يولد!'}
       </button>
       {/* الإشعارات */}
       {notification && (
