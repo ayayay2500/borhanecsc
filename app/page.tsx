@@ -196,7 +196,7 @@ export default function Home() {
       <div className="balance-card">
         <div className="balance-label">رصيدك الحالي</div>
         <div className="balance-amount">
-          {user.points.toLocaleString()} <span>$</span>
+          {user.points.toLocaleString()} <span>DA</span>
         </div>
         <div className="balance-stats">
           <div className="stat-item">
