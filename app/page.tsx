@@ -159,7 +159,7 @@ export default function Home() {
           firstName: "Borhane San",
           photoUrl: "https://i.postimg.cc/JzZkhSCY/Screenshot-2025-05-08-20-30-56-49-50ef9f5a0f3fc24b6f0ffc8843167fe4.jpg",
           description: "تاجر حسابات جواهر + وسيط ",
-          isOnline: true
+          isOnline: false
         },
       ]
       
@@ -173,7 +173,7 @@ export default function Home() {
 
   const handleProductClick = (product: Product) => {
     if (window.Telegram?.WebApp) {
-      const message = `مرحباً، أنا مهتم بشراء ${product.title} بسعر ${product.price.toLocaleString()} دينار. هل لا يزال متوفراً؟`
+      const message = `مرحباً، أنا مهتم بشراء ${product.title} بسعر ${product.price.toLocaleString()} دولار. هل لا يزال متوفراً؟`
       window.Telegram.WebApp.openTelegramLink(`https://t.me/Kharwaydo?text=${encodeURIComponent(message)}`)
     }
   }
@@ -320,7 +320,7 @@ export default function Home() {
 
       {/* تذييل الصفحة */}
       <div className="footer">
-        <p>Developed By <span>Borhane</span></p>
+        <p>Developed By <span>Borhane San</span></p>
       </div>
     </div>
   )
