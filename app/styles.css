@@ -1,14 +1,20 @@
-/* أساسيات الصفحة */
+/* Reset وتنسيقات عامة */
 :root {
-  --primary-color: #4a6bff;
-  --secondary-color: #ff7e5f;
-  --dark-color: #2c3e50;
-  --light-color: #f5f7fa;
-  --success-color: #2ecc71;
-  --warning-color: #f39c12;
-  --danger-color: #e74c3c;
-  --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  --transition: all 0.3s ease;
+  --primary-color: #007bff;
+  --primary-hover: #0069d9;
+  --secondary-color: #6c757d;
+  --success-color: #28a745;
+  --danger-color: #dc3545;
+  --warning-color: #ffc107;
+  --info-color: #17a2b8;
+  --light-color: #f8f9fa;
+  --dark-color: #343a40;
+  --white: #ffffff;
+  --gray: #6c757d;
+  --gray-light: #f8f9fa;
+  --border-radius: 12px;
+  --box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
 * {
@@ -19,14 +25,15 @@
 }
 
 body {
-  background-color: #f9f9f9;
+  background-color: #f5f7fa;
   color: #333;
   line-height: 1.6;
 }
 
+/* الهيكل العام */
 .main-container {
   max-width: 100%;
-  padding: 20px;
+  padding: 15px;
   margin: 0 auto;
 }
 
@@ -34,8 +41,12 @@ body {
 .user-header {
   display: flex;
   align-items: center;
-  margin-bottom: 25px;
-  animation: fadeIn 0.8s ease;
+  gap: 15px;
+  margin-bottom: 20px;
+  padding: 15px;
+  background-color: var(--white);
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
 }
 
 .user-avatar {
@@ -44,17 +55,16 @@ body {
   border-radius: 50%;
   object-fit: cover;
   border: 3px solid var(--primary-color);
-  box-shadow: var(--shadow);
 }
 
 .user-info {
-  margin-left: 15px;
+  flex: 1;
 }
 
 .user-name {
-  font-size: 1.4rem;
-  color: var(--dark-color);
+  font-size: 1.3rem;
   font-weight: 700;
+  color: var(--dark-color);
 }
 
 .user-name span {
@@ -63,31 +73,31 @@ body {
 
 .user-username {
   font-size: 0.9rem;
-  color: #777;
-  margin-top: 2px;
+  color: var(--gray);
+  margin-top: 3px;
 }
 
 /* بطاقة الرصيد */
 .balance-card {
-  background: linear-gradient(135deg, var(--primary-color), #6a5acd);
-  color: white;
+  background: linear-gradient(135deg, var(--primary-color), #3a7bd5);
+  color: var(--white);
   padding: 20px;
-  border-radius: 15px;
-  margin-bottom: 30px;
-  box-shadow: var(--shadow);
+  border-radius: var(--border-radius);
+  margin-bottom: 20px;
+  box-shadow: var(--box-shadow);
+  text-align: center;
   transition: var(--transition);
-  animation: slideUp 0.6s ease;
 }
 
 .balance-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 20px rgba(74, 107, 255, 0.3);
+  transform: translateY(-3px);
+  box-shadow: 0 6px 16px rgba(0, 123, 255, 0.3);
 }
 
 .balance-label {
-  font-size: 0.9rem;
-  opacity: 0.9;
+  font-size: 1rem;
   margin-bottom: 5px;
+  opacity: 0.9;
 }
 
 .balance-amount {
@@ -96,26 +106,56 @@ body {
 }
 
 .balance-amount span {
-  font-size: 1rem;
-  opacity: 0.8;
+  font-size: 1.2rem;
+  font-weight: 500;
+}
+
+/* تبويبات التنقل */
+.tabs-container {
+  display: flex;
+  justify-content: center;
+  margin: 20px 0;
+  gap: 10px;
+}
+
+.tab-button {
+  padding: 12px 25px;
+  border: none;
+  border-radius: 30px;
+  background-color: var(--light-color);
+  color: var(--dark-color);
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  font-size: 0.95rem;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.tab-button.active {
+  background-color: var(--primary-color);
+  color: var(--white);
+  box-shadow: 0 4px 10px rgba(0, 123, 255, 0.3);
+}
+
+.tab-button:not(.active):hover {
+  background-color: #e9ecef;
 }
 
 /* شبكة المنتجات */
 .products-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-  gap: 20px;
-  margin-bottom: 30px;
+  gap: 15px;
+  margin-bottom: 20px;
 }
 
 .product-card {
-  background: white;
-  border-radius: 12px;
+  background-color: var(--white);
+  border-radius: var(--border-radius);
   overflow: hidden;
-  box-shadow: var(--shadow);
+  box-shadow: var(--box-shadow);
   transition: var(--transition);
   cursor: pointer;
-  animation: fadeIn 0.8s ease;
 }
 
 .product-card:hover {
@@ -126,15 +166,18 @@ body {
 .product-image-container {
   position: relative;
   width: 100%;
-  height: 140px;
+  padding-top: 100%; /* نسبة 1:1 */
   overflow: hidden;
 }
 
 .product-image {
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: var(--transition);
+  transition: transform 0.5s ease;
 }
 
 .product-card:hover .product-image {
@@ -143,12 +186,12 @@ body {
 
 .product-badge {
   position: absolute;
-  top: 10px;
-  right: 10px;
-  background-color: rgba(0, 0, 0, 0.7);
-  color: white;
-  padding: 4px 8px;
-  border-radius: 20px;
+  bottom: 10px;
+  left: 10px;
+  background-color: rgba(0, 123, 255, 0.9);
+  color: var(--white);
+  padding: 4px 10px;
+  border-radius: 12px;
   font-size: 0.7rem;
   font-weight: 600;
 }
@@ -158,7 +201,7 @@ body {
 }
 
 .product-title {
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   font-weight: 600;
   margin-bottom: 5px;
   color: var(--dark-color);
@@ -168,35 +211,156 @@ body {
 }
 
 .product-price {
-  font-size: 0.95rem;
+  font-size: 1rem;
   font-weight: 700;
   color: var(--primary-color);
 }
 
-/* تذييل الصفحة */
-.footer {
-  text-align: center;
-  padding: 20px 0;
-  color: #777;
-  font-size: 0.9rem;
-  border-top: 1px solid #eee;
-  margin-top: 20px;
+/* قائمة الوسطاء */
+.brokers-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-bottom: 20px;
 }
 
-.footer span {
-  color: var(--primary-color);
+.broker-card {
+  background: var(--white);
+  border-radius: var(--border-radius);
+  padding: 15px;
+  display: flex;
+  gap: 15px;
+  box-shadow: var(--box-shadow);
+  transition: var(--transition);
+  cursor: pointer;
+}
+
+.broker-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+.broker-avatar-container {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.broker-avatar {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid var(--primary-color);
+  transition: var(--transition);
+}
+
+.broker-card:hover .broker-avatar {
+  transform: scale(1.05);
+}
+
+.online-status {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  padding: 4px 10px;
+  border-radius: 15px;
+  font-size: 0.7rem;
   font-weight: 600;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
-/* الرسائل والتحميل */
-.error-container {
+.online-status.online {
+  background-color: var(--success-color);
+  color: var(--white);
+}
+
+.online-status.offline {
+  background-color: var(--secondary-color);
+  color: var(--white);
+}
+
+.broker-info {
+  flex-grow: 1;
+}
+
+.broker-name {
+  margin: 0 0 5px 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--dark-color);
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.broker-username {
+  font-size: 0.8rem;
+  color: var(--gray);
+  font-weight: 500;
+}
+
+.broker-description {
+  margin: 8px 0 12px;
+  font-size: 0.9rem;
+  color: var(--gray);
+  line-height: 1.5;
+}
+
+.contact-broker-button {
+  background-color: var(--primary-color);
+  color: var(--white);
+  border: none;
+  border-radius: 30px;
+  padding: 8px 15px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  width: 100%;
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+
+.contact-broker-button:hover {
+  background-color: var(--primary-hover);
+  transform: translateY(-2px);
+}
+
+.contact-broker-button:active {
+  transform: translateY(0);
+}
+
+/* حالات التحميل والخطأ */
+.loading-container, .error-container {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 100vh;
-  padding: 20px;
+  height: 60vh;
   text-align: center;
+}
+
+.loading-spinner {
+  width: 50px;
+  height: 50px;
+  border: 5px solid rgba(0, 123, 255, 0.2);
+  border-radius: 50%;
+  border-top-color: var(--primary-color);
+  animation: spin 1s ease-in-out infinite;
+  margin-bottom: 20px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loading-text {
+  font-size: 1.2rem;
+  color: var(--dark-color);
+  font-weight: 500;
 }
 
 .error-icon {
@@ -206,81 +370,104 @@ body {
 }
 
 .error-message {
-  font-size: 1.1rem;
-  margin-bottom: 20px;
+  font-size: 1.2rem;
   color: var(--dark-color);
+  margin-bottom: 20px;
+  max-width: 80%;
 }
 
 .retry-button {
   background-color: var(--primary-color);
-  color: white;
+  color: var(--white);
   border: none;
-  padding: 10px 20px;
   border-radius: 30px;
+  padding: 12px 25px;
+  font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
   transition: var(--transition);
 }
 
 .retry-button:hover {
-  background-color: #3a5bed;
-  transform: translateY(-2px);
+  background-color: var(--primary-hover);
+  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
 }
 
-.loading-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100vh;
+/* تذييل الصفحة */
+.footer {
+  text-align: center;
+  padding: 20px 0;
+  color: var(--gray);
+  font-size: 0.9rem;
 }
 
-.loading-spinner {
-  width: 50px;
-  height: 50px;
-  border: 5px solid #f3f3f3;
-  border-top: 5px solid var(--primary-color);
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin-bottom: 20px;
+.footer span {
+  color: var(--primary-color);
+  font-weight: 600;
 }
 
-.loading-text {
-  font-size: 1.1rem;
-  color: var(--dark-color);
+/* تأثيرات النقر */
+button:active, .product-card:active, .broker-card:active {
+  transform: scale(0.98);
 }
 
 /* تأثيرات الحركة */
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-@keyframes slideUp {
-  from { 
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to { 
-    opacity: 1;
-    transform: translateY(0);
-  }
+.products-grid, .brokers-list {
+  animation: fadeIn 0.5s ease-out;
 }
 
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-/* تأثيرات اللمس للهواتف */
-@media (hover: none) {
-  .product-card:hover {
-    transform: none;
-    box-shadow: var(--shadow);
+/* تصميم متجاوب */
+@media (max-width: 768px) {
+  .products-grid {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 12px;
   }
   
-  .balance-card:hover {
-    transform: none;
-    box-shadow: var(--shadow);
+  .user-header {
+    padding: 12px;
+  }
+  
+  .user-avatar {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .user-name {
+    font-size: 1.1rem;
+  }
+  
+  .broker-card {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  
+  .broker-avatar {
+    width: 60px;
+    height: 60px;
+  }
+  
+  .broker-name {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .products-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .tab-button {
+    padding: 10px 20px;
+    font-size: 0.85rem;
+  }
+  
+  .balance-amount {
+    font-size: 1.8rem;
   }
 }
