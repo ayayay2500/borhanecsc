@@ -56,7 +56,7 @@ export default function Home() {
 
   // قائمة المحظورين (يمكن جلبها من API أو قاعدة بيانات)
   const bannedUsers: BannedUser[] = [
-    { username: "user", reason: "انتهاك شروط الاستخدام" },
+    { username: "Seidmmf", reason: "ضرب القاع على الغش" },
     { username: "spammer", reason: "إرسال رسائل مزعجة" },
     // يمكن إضافة المزيد هنا
   ]
@@ -219,7 +219,7 @@ export default function Home() {
         <div className="banned-icon">🚫</div>
         <h1 className="banned-title">لقد تم حظرك</h1>
         <p className="banned-reason">السبب: {banReason}</p>
-        <p className="banned-contact">للاستفسار يمكنك التواصل مع الدعم الفني</p>
+        <p className="banned-contact">للاستفسار يمكنك التواصل مع المسؤول </p>
       </div>
     )
   }
