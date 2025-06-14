@@ -155,9 +155,9 @@ export default function Home() {
       const mockBrokers: Broker[] = [
         {
           id: 1,
-          username: "@Kharwaydo",
+          username: "Kharwaydo",
           firstName: "Borhane San",
-          photoUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80",
+          photoUrl: "https://i.postimg.cc/JzZkhSCY/Screenshot-2025-05-08-20-30-56-49-50ef9f5a0f3fc24b6f0ffc8843167fe4.jpg",
           description: "تاجر حسابات جواهر + وسيط ",
           isOnline: true
         },
@@ -204,7 +204,7 @@ export default function Home() {
     return (
       <div className="loading-container">
         <div className="loading-spinner"></div>
-        <div className="loading-text">جاري التحميل...</div>
+        <div className="loading-text">لا تقلق يولد 🤣</div>
       </div>
     )
   }
