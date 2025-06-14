@@ -101,45 +101,45 @@ export default function Home() {
       const mockProducts: Product[] = [
         {
           id: 1,
-          title: "ساعة ذكية فاخرة",
-          price: 25000,
-          imageUrl: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80",
-          category: "إلكترونيات"
+          title: "حساب جواهر 5000 اندرويد",
+          price: 1.70,
+          imageUrl: "https://i.postimg.cc/4d0Vdzhy/New-Project-40-C022-BBD.png",
+          category: "باونتي"
         },
         {
           id: 2,
-          title: "حقيبة جلدية فاخرة",
-          price: 18000,
-          imageUrl: "https://images.unsplash.com/photo-1591047139829-d91aecb6caea?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80",
-          category: "أزياء"
+          title: "حساب جواهر 5000 ايفون",
+          price: 1.70,
+          imageUrl: "https://i.postimg.cc/k51fQRb3/New-Project-40-321-E54-A.png",
+          category: "باونتي"
         },
         {
           id: 3,
-          title: "سماعات لاسلكية",
-          price: 12000,
-          imageUrl: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80",
-          category: "إلكترونيات"
+          title: "حساب جواهر + كوزان اندرويد",
+          price: 2.00,
+          imageUrl: "https://i.postimg.cc/fL1CF4C8/New-Project-40-FE9627-F.png",
+          category: "باونتي"
         },
         {
           id: 4,
-          title: "نظارات شمسية",
-          price: 8000,
-          imageUrl: "https://images.unsplash.com/photo-1511499767150-a48a237f0083?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80",
-          category: "أزياء"
+          title: "تحويل فليكسي",
+          price: 0,
+          imageUrl: "https://i.postimg.cc/9Q1p2w1R/New-Project-40-90-F0-A70.png",
+          category: "تحويل"
         },
         {
           id: 5,
-          title: "عطر فاخر",
-          price: 15000,
-          imageUrl: "https://images.unsplash.com/photo-1594035910387-fea47794261f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80",
-          category: "عطور"
+          title: "عضوية شهرية ",
+          price: 6.00,
+          imageUrl: "https://i.postimg.cc/DzZcwfYC/New-Project-40-8383-F74.png",
+          category: "شحن"
         },
         {
           id: 6,
-          title: "سوار ذهبي",
-          price: 30000,
-          imageUrl: "https://images.unsplash.com/photo-1602173574767-37ac01994b2a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80",
-          category: "مجوهرات"
+          title: "لايوجد منتج",
+          price: 99999,
+          imageUrl: "",
+          category: "لايوجد"
         }
       ]
       
@@ -155,38 +155,13 @@ export default function Home() {
       const mockBrokers: Broker[] = [
         {
           id: 1,
-          username: "broker1",
-          firstName: "أحمد",
+          username: "@Kharwaydo",
+          firstName: "Borhane San",
           photoUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80",
-          description: "وسيط موثوق مع خبرة 5 سنوات في مجال الإلكترونيات",
+          description: "تاجر حسابات جواهر + وسيط ",
           isOnline: true
         },
         {
-          id: 2,
-          username: "broker2",
-          firstName: "محمد",
-          photoUrl: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80",
-          description: "متخصص في المنتجات الفاخرة والعطور",
-          isOnline: false,
-          lastSeen: "منذ ساعتين"
-        },
-        {
-          id: 3,
-          username: "broker3",
-          firstName: "فاطمة",
-          photoUrl: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80",
-          description: "وسيط معتمد للمجوهرات والساعات",
-          isOnline: true
-        },
-        {
-          id: 4,
-          username: "broker4",
-          firstName: "خالد",
-          photoUrl: "https://images.unsplash.com/photo-1544725176-7c40e5a71c5e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80",
-          description: "متخصص في الأزياء والإكسسوارات",
-          isOnline: false,
-          lastSeen: "منذ 30 دقيقة"
-        }
       ]
       
       setBrokers(mockBrokers)
@@ -261,7 +236,7 @@ export default function Home() {
       <div className="balance-card">
         <div className="balance-label">رصيدك الحالي</div>
         <div className="balance-amount">
-          {user.points.toLocaleString()} <span>DA</span>
+          {user.points.toLocaleString()} <span>XP</span>
         </div>
       </div>
 
@@ -303,7 +278,7 @@ export default function Home() {
               </div>
               <div className="product-info">
                 <h3 className="product-title">{product.title}</h3>
-                <div className="product-price">{product.price.toLocaleString()} DA</div>
+                <div className="product-price">{product.price.toLocaleString()} $</div>
               </div>
             </div>
           ))}
