@@ -29,13 +29,24 @@ type Product = {
   category: string
 }
 
+type Broker = {
+  id: number
+  username: string
+  firstName: string
+  photoUrl: string
+  description: string
+  isOnline: boolean
+  lastSeen?: string
+}
+
 export default function Home() {
   const [user, setUser] = useState<User | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [products, setProducts] = useState<Product[]>([])
+  const [brokers, setBrokers] = useState<Broker[]>([])
+  const [activeTab, setActiveTab] = useState<'products' | 'brokers'>('products')
   const [loading, setLoading] = useState(true)
 
-  // تحميل بيانات المستخدم والمنتجات
   useEffect(() => {
     if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
       const tg = window.Telegram.WebApp
@@ -47,6 +58,7 @@ export default function Home() {
       if (initDataUnsafe.user) {
         fetchUserData(initDataUnsafe.user)
         fetchProducts()
+        fetchBrokers()
       } else {
         setError('لا توجد بيانات مستخدم متاحة')
       }
@@ -86,7 +98,6 @@ export default function Home() {
 
   const fetchProducts = async () => {
     try {
-      // يمكن استبدال هذا بمصدر بيانات حقيقي
       const mockProducts: Product[] = [
         {
           id: 1,
@@ -133,9 +144,55 @@ export default function Home() {
       ]
       
       setProducts(mockProducts)
-      setLoading(false)
     } catch (err) {
       setError('فشل في تحميل المنتجات')
+    }
+  }
+
+  const fetchBrokers = async () => {
+    try {
+      // بيانات وهمية للوسطاء
+      const mockBrokers: Broker[] = [
+        {
+          id: 1,
+          username: "broker1",
+          firstName: "أحمد",
+          photoUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80",
+          description: "وسيط موثوق مع خبرة 5 سنوات في مجال الإلكترونيات",
+          isOnline: true
+        },
+        {
+          id: 2,
+          username: "broker2",
+          firstName: "محمد",
+          photoUrl: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80",
+          description: "متخصص في المنتجات الفاخرة والعطور",
+          isOnline: false,
+          lastSeen: "منذ ساعتين"
+        },
+        {
+          id: 3,
+          username: "broker3",
+          firstName: "فاطمة",
+          photoUrl: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80",
+          description: "وسيط معتمد للمجوهرات والساعات",
+          isOnline: true
+        },
+        {
+          id: 4,
+          username: "broker4",
+          firstName: "خالد",
+          photoUrl: "https://images.unsplash.com/photo-1544725176-7c40e5a71c5e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80",
+          description: "متخصص في الأزياء والإكسسوارات",
+          isOnline: false,
+          lastSeen: "منذ 30 دقيقة"
+        }
+      ]
+      
+      setBrokers(mockBrokers)
+      setLoading(false)
+    } catch (err) {
+      setError('فشل في تحميل بيانات الوسطاء')
       setLoading(false)
     }
   }
@@ -144,6 +201,13 @@ export default function Home() {
     if (window.Telegram?.WebApp) {
       const message = `مرحباً، أنا مهتم بشراء ${product.title} بسعر ${product.price.toLocaleString()} دينار. هل لا يزال متوفراً؟`
       window.Telegram.WebApp.openTelegramLink(`https://t.me/Kharwaydo?text=${encodeURIComponent(message)}`)
+    }
+  }
+
+  const handleBrokerClick = (broker: Broker) => {
+    if (window.Telegram?.WebApp) {
+      const message = `مرحباً ${broker.firstName}، أنا مهتم بالتعامل معك كوسيط موثوق. هل يمكنك مساعدتي؟`
+      window.Telegram.WebApp.openTelegramLink(`https://t.me/${broker.username}?text=${encodeURIComponent(message)}`)
     }
   }
 
@@ -201,32 +265,84 @@ export default function Home() {
         </div>
       </div>
 
-      {/* قائمة المنتجات */}
-      <div className="products-grid">
-        {products.map(product => (
-          <div 
-            key={product.id} 
-            className="product-card"
-            onClick={() => handleProductClick(product)}
-          >
-            <div className="product-image-container">
-              <img 
-                src={product.imageUrl} 
-                alt={product.title}
-                className="product-image"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).src = '/product-placeholder.png'
-                }}
-              />
-              <div className="product-badge">{product.category}</div>
-            </div>
-            <div className="product-info">
-              <h3 className="product-title">{product.title}</h3>
-              <div className="product-price">{product.price.toLocaleString()} DA</div>
-            </div>
-          </div>
-        ))}
+      {/* تبويبات التنقل */}
+      <div className="tabs-container">
+        <button 
+          className={`tab-button ${activeTab === 'products' ? 'active' : ''}`}
+          onClick={() => setActiveTab('products')}
+        >
+          المنتجات
+        </button>
+        <button 
+          className={`tab-button ${activeTab === 'brokers' ? 'active' : ''}`}
+          onClick={() => setActiveTab('brokers')}
+        >
+          وسطاء موثوقون
+        </button>
       </div>
+
+      {/* محتوى التبويب النشط */}
+      {activeTab === 'products' ? (
+        <div className="products-grid">
+          {products.map(product => (
+            <div 
+              key={product.id} 
+              className="product-card"
+              onClick={() => handleProductClick(product)}
+            >
+              <div className="product-image-container">
+                <img 
+                  src={product.imageUrl} 
+                  alt={product.title}
+                  className="product-image"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = '/product-placeholder.png'
+                  }}
+                />
+                <div className="product-badge">{product.category}</div>
+              </div>
+              <div className="product-info">
+                <h3 className="product-title">{product.title}</h3>
+                <div className="product-price">{product.price.toLocaleString()} DA</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="brokers-list">
+          {brokers.map(broker => (
+            <div 
+              key={broker.id} 
+              className="broker-card"
+              onClick={() => handleBrokerClick(broker)}
+            >
+              <div className="broker-avatar-container">
+                <img
+                  src={broker.photoUrl || '/default-avatar.png'}
+                  alt={`${broker.firstName}'s profile`}
+                  className="broker-avatar"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = '/default-avatar.png'
+                  }}
+                />
+                <div className={`online-status ${broker.isOnline ? 'online' : 'offline'}`}>
+                  {broker.isOnline ? 'متصل' : broker.lastSeen || 'غير متصل'}
+                </div>
+              </div>
+              <div className="broker-info">
+                <h3 className="broker-name">
+                  {broker.firstName}
+                  <span className="broker-username">@{broker.username}</span>
+                </h3>
+                <p className="broker-description">{broker.description}</p>
+                <button className="contact-broker-button">
+                  التواصل مع الوسيط
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* تذييل الصفحة */}
       <div className="footer">
