@@ -56,7 +56,7 @@ export default function Home() {
 
   // قائمة المحظورين (يمكن جلبها من API أو قاعدة بيانات)
   const bannedUsers: BannedUser[] = [
-    { username: "Kharwaydo", reason: "انتهاك شروط الاستخدام" },
+    { username: "user", reason: "انتهاك شروط الاستخدام" },
     { username: "spammer", reason: "إرسال رسائل مزعجة" },
     // يمكن إضافة المزيد هنا
   ]
