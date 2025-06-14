@@ -39,6 +39,11 @@ type Broker = {
   lastSeen?: string
 }
 
+type BannedUser = {
+  username: string
+  reason: string
+}
+
 export default function Home() {
   const [user, setUser] = useState<User | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -46,6 +51,15 @@ export default function Home() {
   const [brokers, setBrokers] = useState<Broker[]>([])
   const [activeTab, setActiveTab] = useState<'products' | 'brokers'>('products')
   const [loading, setLoading] = useState(true)
+  const [isBanned, setIsBanned] = useState(false)
+  const [banReason, setBanReason] = useState('')
+
+  // قائمة المحظورين (يمكن جلبها من API أو قاعدة بيانات)
+  const bannedUsers: BannedUser[] = [
+    { username: "user1", reason: "انتهاك شروط الاستخدام" },
+    { username: "spammer", reason: "إرسال رسائل مزعجة" },
+    // يمكن إضافة المزيد هنا
+  ]
 
   useEffect(() => {
     if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
@@ -56,9 +70,14 @@ export default function Home() {
       const initDataUnsafe = tg.initDataUnsafe || {}
       
       if (initDataUnsafe.user) {
-        fetchUserData(initDataUnsafe.user)
-        fetchProducts()
-        fetchBrokers()
+        // التحقق من الحظر قبل تحميل البيانات
+        checkIfBanned(initDataUnsafe.user.username)
+        
+        if (!isBanned) {
+          fetchUserData(initDataUnsafe.user)
+          fetchProducts()
+          fetchBrokers()
+        }
       } else {
         setError('لا توجد بيانات مستخدم متاحة')
       }
@@ -66,6 +85,16 @@ export default function Home() {
       setError('الرجاء فتح البوت عبر Telegram')
     }
   }, [])
+
+  const checkIfBanned = (username?: string) => {
+    if (!username) return
+    
+    const bannedUser = bannedUsers.find(user => user.username.toLowerCase() === username.toLowerCase())
+    if (bannedUser) {
+      setIsBanned(true)
+      setBanReason(bannedUser.reason)
+    }
+  }
 
   const fetchUserData = useCallback(async (tgUser: any) => {
     try {
@@ -151,7 +180,6 @@ export default function Home() {
 
   const fetchBrokers = async () => {
     try {
-      // بيانات وهمية للوسطاء
       const mockBrokers: Broker[] = [
         {
           id: 1,
@@ -183,6 +211,17 @@ export default function Home() {
       const message = `مرحباً ${broker.firstName}، أنا مهتم بالتعامل معك كوسيط موثوق. هل يمكنك مساعدتي؟`
       window.Telegram.WebApp.openTelegramLink(`https://t.me/${broker.username}?text=${encodeURIComponent(message)}`)
     }
+  }
+
+  if (isBanned) {
+    return (
+      <div className="banned-container">
+        <div className="banned-icon">🚫</div>
+        <h1 className="banned-title">لقد تم حظرك</h1>
+        <p className="banned-reason">السبب: {banReason}</p>
+        <p className="banned-contact">للاستفسار يمكنك التواصل مع الدعم الفني</p>
+      </div>
+    )
   }
 
   if (error) {
