@@ -1,237 +1,286 @@
-'use client'
+/* أساسيات الصفحة */
+:root {
+  --primary-color: #4a6bff;
+  --secondary-color: #ff7e5f;
+  --dark-color: #2c3e50;
+  --light-color: #f5f7fa;
+  --success-color: #2ecc71;
+  --warning-color: #f39c12;
+  --danger-color: #e74c3c;
+  --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  --transition: all 0.3s ease;
+}
 
-import { useEffect, useState, useCallback } from 'react'
-import { WebApp } from '@twa-dev/types'
-import './styles.css'
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
 
-declare global {
-  interface Window {
-    Telegram?: {
-      WebApp: WebApp
-    }
+body {
+  background-color: #f9f9f9;
+  color: #333;
+  line-height: 1.6;
+}
+
+.main-container {
+  max-width: 100%;
+  padding: 20px;
+  margin: 0 auto;
+}
+
+/* رأس الصفحة */
+.user-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 25px;
+  animation: fadeIn 0.8s ease;
+}
+
+.user-avatar {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid var(--primary-color);
+  box-shadow: var(--shadow);
+}
+
+.user-info {
+  margin-left: 15px;
+}
+
+.user-name {
+  font-size: 1.4rem;
+  color: var(--dark-color);
+  font-weight: 700;
+}
+
+.user-name span {
+  color: var(--primary-color);
+}
+
+.user-username {
+  font-size: 0.9rem;
+  color: #777;
+  margin-top: 2px;
+}
+
+/* بطاقة الرصيد */
+.balance-card {
+  background: linear-gradient(135deg, var(--primary-color), #6a5acd);
+  color: white;
+  padding: 20px;
+  border-radius: 15px;
+  margin-bottom: 30px;
+  box-shadow: var(--shadow);
+  transition: var(--transition);
+  animation: slideUp 0.6s ease;
+}
+
+.balance-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(74, 107, 255, 0.3);
+}
+
+.balance-label {
+  font-size: 0.9rem;
+  opacity: 0.9;
+  margin-bottom: 5px;
+}
+
+.balance-amount {
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+.balance-amount span {
+  font-size: 1rem;
+  opacity: 0.8;
+}
+
+/* شبكة المنتجات */
+.products-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.product-card {
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  transition: var(--transition);
+  cursor: pointer;
+  animation: fadeIn 0.8s ease;
+}
+
+.product-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+.product-image-container {
+  position: relative;
+  width: 100%;
+  height: 140px;
+  overflow: hidden;
+}
+
+.product-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: var(--transition);
+}
+
+.product-card:hover .product-image {
+  transform: scale(1.05);
+}
+
+.product-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 20px;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+.product-info {
+  padding: 12px;
+}
+
+.product-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 5px;
+  color: var(--dark-color);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.product-price {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--primary-color);
+}
+
+/* تذييل الصفحة */
+.footer {
+  text-align: center;
+  padding: 20px 0;
+  color: #777;
+  font-size: 0.9rem;
+  border-top: 1px solid #eee;
+  margin-top: 20px;
+}
+
+.footer span {
+  color: var(--primary-color);
+  font-weight: 600;
+}
+
+/* الرسائل والتحميل */
+.error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  padding: 20px;
+  text-align: center;
+}
+
+.error-icon {
+  font-size: 3rem;
+  margin-bottom: 20px;
+  color: var(--danger-color);
+}
+
+.error-message {
+  font-size: 1.1rem;
+  margin-bottom: 20px;
+  color: var(--dark-color);
+}
+
+.retry-button {
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 30px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.retry-button:hover {
+  background-color: #3a5bed;
+  transform: translateY(-2px);
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+}
+
+.loading-spinner {
+  width: 50px;
+  height: 50px;
+  border: 5px solid #f3f3f3;
+  border-top: 5px solid var(--primary-color);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 20px;
+}
+
+.loading-text {
+  font-size: 1.1rem;
+  color: var(--dark-color);
+}
+
+/* تأثيرات الحركة */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { 
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to { 
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
-type User = {
-  telegramId: number
-  firstName: string
-  lastName?: string
-  username?: string
-  points: number
-  photoUrl?: string
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
-type Product = {
-  id: number
-  title: string
-  price: number
-  imageUrl: string
-  category: string
-}
-
-export default function Home() {
-  const [user, setUser] = useState<User | null>(null)
-  const [error, setError] = useState<string | null>(null)
-  const [products, setProducts] = useState<Product[]>([])
-  const [loading, setLoading] = useState(true)
-
-  // تحميل بيانات المستخدم والمنتجات
-  useEffect(() => {
-    if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
-      const tg = window.Telegram.WebApp
-      tg.ready()
-      tg.expand()
-
-      const initDataUnsafe = tg.initDataUnsafe || {}
-      
-      if (initDataUnsafe.user) {
-        fetchUserData(initDataUnsafe.user)
-        fetchProducts()
-      } else {
-        setError('لا توجد بيانات مستخدم متاحة')
-      }
-    } else {
-      setError('الرجاء فتح البوت عبر Telegram')
-    }
-  }, [])
-
-  const fetchUserData = useCallback(async (tgUser: any) => {
-    try {
-      const res = await fetch('/api/user', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(tgUser),
-      })
-      
-      const data = await res.json()
-      
-      if (data.error) {
-        setError(data.error)
-      } else {
-        setUser({
-          telegramId: tgUser.id,
-          firstName: tgUser.first_name,
-          lastName: tgUser.last_name,
-          username: tgUser.username,
-          points: data.points || 0,
-          photoUrl: tgUser.photo_url
-        })
-      }
-    } catch (err) {
-      setError('فشل في تحميل بيانات المستخدم')
-    }
-  }, [])
-
-  const fetchProducts = async () => {
-    try {
-      // يمكن استبدال هذا بمصدر بيانات حقيقي
-      const mockProducts: Product[] = [
-        {
-          id: 1,
-          title: "ساعة ذكية فاخرة",
-          price: 25000,
-          imageUrl: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80",
-          category: "إلكترونيات"
-        },
-        {
-          id: 2,
-          title: "حقيبة جلدية فاخرة",
-          price: 18000,
-          imageUrl: "https://images.unsplash.com/photo-1591047139829-d91aecb6caea?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80",
-          category: "أزياء"
-        },
-        {
-          id: 3,
-          title: "سماعات لاسلكية",
-          price: 12000,
-          imageUrl: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80",
-          category: "إلكترونيات"
-        },
-        {
-          id: 4,
-          title: "نظارات شمسية",
-          price: 8000,
-          imageUrl: "https://images.unsplash.com/photo-1511499767150-a48a237f0083?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80",
-          category: "أزياء"
-        },
-        {
-          id: 5,
-          title: "عطر فاخر",
-          price: 15000,
-          imageUrl: "https://images.unsplash.com/photo-1594035910387-fea47794261f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80",
-          category: "عطور"
-        },
-        {
-          id: 6,
-          title: "سوار ذهبي",
-          price: 30000,
-          imageUrl: "https://images.unsplash.com/photo-1602173574767-37ac01994b2a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80",
-          category: "مجوهرات"
-        }
-      ]
-      
-      setProducts(mockProducts)
-      setLoading(false)
-    } catch (err) {
-      setError('فشل في تحميل المنتجات')
-      setLoading(false)
-    }
+/* تأثيرات اللمس للهواتف */
+@media (hover: none) {
+  .product-card:hover {
+    transform: none;
+    box-shadow: var(--shadow);
   }
-
-  const handleProductClick = (product: Product) => {
-    if (window.Telegram?.WebApp) {
-      const message = `مرحباً، أنا مهتم بشراء ${product.title} بسعر ${product.price.toLocaleString()} دينار. هل لا يزال متوفراً؟`
-      window.Telegram.WebApp.openTelegramLink(`https://t.me/Kharwaydo?text=${encodeURIComponent(message)}`)
-    }
+  
+  .balance-card:hover {
+    transform: none;
+    box-shadow: var(--shadow);
   }
-
-  if (error) {
-    return (
-      <div className="error-container">
-        <div className="error-icon">⚠️</div>
-        <div className="error-message">{error}</div>
-        <button 
-          className="retry-button"
-          onClick={() => window.location.reload()}
-        >
-          حاول مرة أخرى
-        </button>
-      </div>
-    )
-  }
-
-  if (!user || loading) {
-    return (
-      <div className="loading-container">
-        <div className="loading-spinner"></div>
-        <div className="loading-text">جاري التحميل...</div>
-      </div>
-    )
-  }
-
-  return (
-    <div className="main-container">
-      {/* رأس الصفحة */}
-      <div className="user-header">
-        <img
-          src={user.photoUrl || '/default-avatar.png'}
-          alt={`${user.firstName}'s profile`}
-          className="user-avatar"
-          onError={(e) => {
-            (e.target as HTMLImageElement).src = '/default-avatar.png'
-          }}
-        />
-        <div className="user-info">
-          <h1 className="user-name">
-            مرحباً، <span>{user.firstName}</span>!
-          </h1>
-          {user.username && (
-            <p className="user-username">@{user.username}</p>
-          )}
-        </div>
-      </div>
-
-      {/* بطاقة الرصيد */}
-      <div className="balance-card">
-        <div className="balance-label">رصيدك الحالي</div>
-        <div className="balance-amount">
-          {user.points.toLocaleString()} <span>DA</span>
-        </div>
-      </div>
-
-      {/* قائمة المنتجات */}
-      <div className="products-grid">
-        {products.map(product => (
-          <div 
-            key={product.id} 
-            className="product-card"
-            onClick={() => handleProductClick(product)}
-          >
-            <div className="product-image-container">
-              <img 
-                src={product.imageUrl} 
-                alt={product.title}
-                className="product-image"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).src = '/product-placeholder.png'
-                }}
-              />
-              <div className="product-badge">{product.category}</div>
-            </div>
-            <div className="product-info">
-              <h3 className="product-title">{product.title}</h3>
-              <div className="product-price">{product.price.toLocaleString()} DA</div>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* تذييل الصفحة */}
-      <div className="footer">
-        <p>Developed By <span>Borhane</span></p>
-      </div>
-    </div>
-  )
 }
