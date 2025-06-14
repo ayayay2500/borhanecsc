@@ -21,16 +21,21 @@ type User = {
   photoUrl?: string
 }
 
+type Product = {
+  id: number
+  title: string
+  price: number
+  imageUrl: string
+  category: string
+}
+
 export default function Home() {
   const [user, setUser] = useState<User | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const [notification, setNotification] = useState('')
-  const [isTapping, setIsTapping] = useState(false)
-  const [tapCount, setTapCount] = useState(0)
-  const [combo, setCombo] = useState(0)
-  const [showConfetti, setShowConfetti] = useState(false)
+  const [products, setProducts] = useState<Product[]>([])
+  const [loading, setLoading] = useState(true)
 
-  // تحميل بيانات المستخدم
+  // تحميل بيانات المستخدم والمنتجات
   useEffect(() => {
     if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
       const tg = window.Telegram.WebApp
@@ -41,6 +46,7 @@ export default function Home() {
       
       if (initDataUnsafe.user) {
         fetchUserData(initDataUnsafe.user)
+        fetchProducts()
       } else {
         setError('لا توجد بيانات مستخدم متاحة')
       }
@@ -78,62 +84,67 @@ export default function Home() {
     }
   }, [])
 
-  // زيادة النقاط مع تأثيرات كومبو
-  const handleIncreasePoints = useCallback(async () => {
-    if (!user) return
-
-    setIsTapping(true)
-    setTapCount(prev => prev + 1)
-    setCombo(prev => prev + 1)
-
-    // إعادة تعيين الكومبو بعد ثانية
-    setTimeout(() => setCombo(0), 1000)
-
+  const fetchProducts = async () => {
     try {
-      const res = await fetch('/api/increase-points', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      // يمكن استبدال هذا بمصدر بيانات حقيقي
+      const mockProducts: Product[] = [
+        {
+          id: 1,
+          title: "ساعة ذكية فاخرة",
+          price: 25000,
+          imageUrl: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80",
+          category: "إلكترونيات"
         },
-        body: JSON.stringify({ 
-          telegramId: user.telegramId,
-          combo: combo > 3 ? combo : 0 // إرسال الكومبو إذا كان أكثر من 3
-        }),
-      })
-
-      const data = await res.json()
-      
-      if (data.success) {
-        setUser(prev => prev ? { ...prev, points: data.points } : null)
-        
-        // تأثيرات خاصة عند وصول الكومبو لمستوى معين
-        if (combo >= 5) {
-          setShowConfetti(true)
-          setTimeout(() => setShowConfetti(false), 2000)
-          setNotification(`كومبو رهيب! +${combo * 2} نقطة`)
-        } else if (combo >= 3) {
-          setNotification(`كومبو! +${combo} نقطة`)
-        } else {
-          setNotification('+1 نقطة!')
+        {
+          id: 2,
+          title: "حقيبة جلدية فاخرة",
+          price: 18000,
+          imageUrl: "https://images.unsplash.com/photo-1591047139829-d91aecb6caea?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80",
+          category: "أزياء"
+        },
+        {
+          id: 3,
+          title: "سماعات لاسلكية",
+          price: 12000,
+          imageUrl: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80",
+          category: "إلكترونيات"
+        },
+        {
+          id: 4,
+          title: "نظارات شمسية",
+          price: 8000,
+          imageUrl: "https://images.unsplash.com/photo-1511499767150-a48a237f0083?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80",
+          category: "أزياء"
+        },
+        {
+          id: 5,
+          title: "عطر فاخر",
+          price: 15000,
+          imageUrl: "https://images.unsplash.com/photo-1594035910387-fea47794261f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80",
+          category: "عطور"
+        },
+        {
+          id: 6,
+          title: "سوار ذهبي",
+          price: 30000,
+          imageUrl: "https://images.unsplash.com/photo-1602173574767-37ac01994b2a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80",
+          category: "مجوهرات"
         }
-        
-        setTimeout(() => setNotification(''), 2000)
-      } else {
-        setError(data.error || 'فشل في إضافة النقاط')
-      }
+      ]
+      
+      setProducts(mockProducts)
+      setLoading(false)
     } catch (err) {
-      setError('حدث خطأ أثناء تحديث النقاط')
-    } finally {
-      setTimeout(() => setIsTapping(false), 100)
+      setError('فشل في تحميل المنتجات')
+      setLoading(false)
     }
-  }, [user, combo])
+  }
 
-  // تأثيرات الاهتزاز عند النقر
-  const handleTap = () => {
+  const handleProductClick = (product: Product) => {
     if (window.Telegram?.WebApp) {
-      window.Telegram.WebApp.HapticFeedback.impactOccurred('light')
+      const message = `مرحباً، أنا مهتم بشراء ${product.title} بسعر ${product.price.toLocaleString()} دينار. هل لا يزال متوفراً؟`
+      window.Telegram.WebApp.openTelegramLink(`https://t.me/Kharwaydo?text=${encodeURIComponent(message)}`)
     }
-    handleIncreasePoints()
   }
 
   if (error) {
@@ -151,35 +162,25 @@ export default function Home() {
     )
   }
 
-  if (!user) {
+  if (!user || loading) {
     return (
       <div className="loading-container">
         <div className="loading-spinner"></div>
         <div className="loading-text">جاري التحميل...</div>
-        <div className="loading-hint">ما تقلقش اودي 🤣</div>
       </div>
     )
   }
 
   return (
-    <div className={`main-container ${showConfetti ? 'confetti-active' : ''}`}>
-      {/* تأثير الكونفيتي */}
-      {showConfetti && (
-        <div className="confetti-container">
-          {[...Array(50)].map((_, i) => (
-            <div key={i} className="confetti-piece"></div>
-          ))}
-        </div>
-      )}
-
+    <div className="main-container">
       {/* رأس الصفحة */}
       <div className="user-header">
         <img
-          src={user.photoUrl || '/icon2.png'}
+          src={user.photoUrl || '/default-avatar.png'}
           alt={`${user.firstName}'s profile`}
           className="user-avatar"
           onError={(e) => {
-            (e.target as HTMLImageElement).src = '/icon2.png'
+            (e.target as HTMLImageElement).src = '/default-avatar.png'
           }}
         />
         <div className="user-info">
@@ -198,31 +199,38 @@ export default function Home() {
         <div className="balance-amount">
           {user.points.toLocaleString()} <span>DA</span>
         </div>
-        <div className="balance-stats">
-          <div className="stat-item">
-            <span>لا اله الا الله محمد رسول الله</span>
-
-          </div>
-          {combo > 0 && (
-            <div className="combo-indicator">
-              كومبو x{combo}!
-            </div>
-          )}
-        </div>
       </div>
 
-      {/* زر النقر الرئيسي */}
-    
-      {/* الإشعارات */}
-      {notification && (
-        <div className={`notification ${combo >= 5 ? 'combo-notification' : ''}`}>
-          {notification}
-        </div>
-      )}
+      {/* قائمة المنتجات */}
+      <div className="products-grid">
+        {products.map(product => (
+          <div 
+            key={product.id} 
+            className="product-card"
+            onClick={() => handleProductClick(product)}
+          >
+            <div className="product-image-container">
+              <img 
+                src={product.imageUrl} 
+                alt={product.title}
+                className="product-image"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = '/product-placeholder.png'
+                }}
+              />
+              <div className="product-badge">{product.category}</div>
+            </div>
+            <div className="product-info">
+              <h3 className="product-title">{product.title}</h3>
+              <div className="product-price">{product.price.toLocaleString()} DA</div>
+            </div>
+          </div>
+        ))}
+      </div>
 
-      {/* معلومات إضافية */}
-      <div className="hint-text">
-      Devloped By Borhane San
+      {/* تذييل الصفحة */}
+      <div className="footer">
+        <p>Developed By <span>Borhane</span></p>
       </div>
     </div>
   )
