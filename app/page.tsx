@@ -13,43 +13,29 @@ declare global {
 }
 
 type User = {
-  id: number
+  telegramId: number
   firstName: string
   lastName?: string
   username?: string
-  balance: number
+  points: number
   photoUrl?: string
 }
 
 type Product = {
   id: number
-  name: string
+  title: string
   price: number
   imageUrl: string
-  description: string
   category: string
-}
-
-type Mediator = {
-  id: number
-  username: string
-  name: string
-  photoUrl: string
-  rating: number
-  specialty: string
-  description: string
 }
 
 export default function Home() {
   const [user, setUser] = useState<User | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const [activeTab, setActiveTab] = useState<'mediators' | 'products'>('mediators')
   const [products, setProducts] = useState<Product[]>([])
-  const [mediators, setMediators] = useState<Mediator[]>([])
   const [loading, setLoading] = useState(true)
-  const [purchaseStatus, setPurchaseStatus] = useState<{success: boolean, message: string} | null>(null)
 
-  // تحميل البيانات الأولية
+  // تحميل بيانات المستخدم والمنتجات
   useEffect(() => {
     if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
       const tg = window.Telegram.WebApp
@@ -60,8 +46,7 @@ export default function Home() {
       
       if (initDataUnsafe.user) {
         fetchUserData(initDataUnsafe.user)
-        loadMediators()
-        loadProducts()
+        fetchProducts()
       } else {
         setError('لا توجد بيانات مستخدم متاحة')
       }
@@ -72,123 +57,93 @@ export default function Home() {
 
   const fetchUserData = useCallback(async (tgUser: any) => {
     try {
-      // في الواقع ستكون هذه استجابة من الخادم
-      setUser({
-        id: tgUser.id,
-        firstName: tgUser.first_name,
-        lastName: tgUser.last_name,
-        username: tgUser.username,
-        balance: 5000, // رصيد افتراضي
-        photoUrl: tgUser.photo_url
+      const res = await fetch('/api/user', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(tgUser),
       })
-      setLoading(false)
+      
+      const data = await res.json()
+      
+      if (data.error) {
+        setError(data.error)
+      } else {
+        setUser({
+          telegramId: tgUser.id,
+          firstName: tgUser.first_name,
+          lastName: tgUser.last_name,
+          username: tgUser.username,
+          points: data.points || 0,
+          photoUrl: tgUser.photo_url
+        })
+      }
     } catch (err) {
       setError('فشل في تحميل بيانات المستخدم')
-      setLoading(false)
     }
   }, [])
 
-  const loadMediators = async () => {
-    // بيانات وهمية للوسطاء
-    const mockMediators: Mediator[] = [
-      {
-        id: 1,
-        username: "Kharwaydo",
-        name: "بورحان الدين",
-        photoUrl: "https://randomuser.me/api/portraits/men/1.jpg",
-        rating: 4.9,
-        specialty: "وسيط معتمد",
-        description: "وسيط معتمد في مجال العقارات والتجارة الإلكترونية بخبرة 5 سنوات"
-      },
-      {
-        id: 2,
-        username: "Mediator2",
-        name: "أحمد محمد",
-        photoUrl: "https://randomuser.me/api/portraits/men/2.jpg",
-        rating: 4.7,
-        specialty: "وسيط سياحي",
-        description: "متخصص في حجوزات الفنادق والطيران بأسعار مميزة"
-      },
-      {
-        id: 3,
-        username: "Mediator3",
-        name: "سارة علي",
-        photoUrl: "https://randomuser.me/api/portraits/women/1.jpg",
-        rating: 4.8,
-        specialty: "وسيط تجاري",
-        description: "وسيط معتمد لشراء وبيع المنتجات التجارية بضمان"
-      }
-    ]
-    setMediators(mockMediators)
-  }
-
-  const loadProducts = async () => {
-    // بيانات وهمية للمنتجات
-    const mockProducts: Product[] = [
-      {
-        id: 1,
-        name: "دورة التسويق الإلكتروني",
-        price: 2000,
-        imageUrl: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80",
-        description: "دورة متكاملة لتعلم أساسيات التسويق الإلكتروني وكسب المال",
-        category: "تعليمي"
-      },
-      {
-        id: 2,
-        name: "برنامج إدارة المحتوى",
-        price: 1500,
-        imageUrl: "https://images.unsplash.com/photo-1555774698-0b77e0d5fac6?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80",
-        description: "برنامج متكامل لإدارة المحتوى والتخطيط للنشر",
-        category: "برمجيات"
-      },
-      {
-        id: 3,
-        name: "قوالب موقع إلكتروني",
-        price: 1000,
-        imageUrl: "https://images.unsplash.com/photo-1467232004584-a241de8bcf5d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80",
-        description: "مجموعة قوالب جاهزة لمواقع إلكترونية متنوعة",
-        category: "تصميم"
-      }
-    ]
-    setProducts(mockProducts)
-  }
-
-  const contactMediator = (mediatorUsername: string) => {
-    if (window.Telegram?.WebApp) {
-      const message = `مرحباً، أنا مهتم بالتعامل معك كوسيط. هل يمكنك مساعدتي؟`
-      window.Telegram.WebApp.openTelegramLink(`https://t.me/${mediatorUsername}?text=${encodeURIComponent(message)}`)
-    }
-  }
-
-  const purchaseProduct = async (product: Product) => {
-    if (!user) return
-    
-    // التحقق من الرصيد الكافي
-    if (user.balance < product.price) {
-      setPurchaseStatus({success: false, message: "رصيدك غير كافي لشراء هذا المنتج"})
-      setTimeout(() => setPurchaseStatus(null), 3000)
-      return
-    }
-    
+  const fetchProducts = async () => {
     try {
-      // هنا سيتم إرسال طلب الشراء للخادم
-      // وفي الواقع ستكون هذه استجابة من الخادم
-      const newBalance = user.balance - product.price
-      setUser({...user, balance: newBalance})
+      // يمكن استبدال هذا بمصدر بيانات حقيقي
+      const mockProducts: Product[] = [
+        {
+          id: 1,
+          title: "ساعة ذكية فاخرة",
+          price: 25000,
+          imageUrl: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80",
+          category: "إلكترونيات"
+        },
+        {
+          id: 2,
+          title: "حقيبة جلدية فاخرة",
+          price: 18000,
+          imageUrl: "https://images.unsplash.com/photo-1591047139829-d91aecb6caea?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80",
+          category: "أزياء"
+        },
+        {
+          id: 3,
+          title: "سماعات لاسلكية",
+          price: 12000,
+          imageUrl: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80",
+          category: "إلكترونيات"
+        },
+        {
+          id: 4,
+          title: "نظارات شمسية",
+          price: 8000,
+          imageUrl: "https://images.unsplash.com/photo-1511499767150-a48a237f0083?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80",
+          category: "أزياء"
+        },
+        {
+          id: 5,
+          title: "عطر فاخر",
+          price: 15000,
+          imageUrl: "https://images.unsplash.com/photo-1594035910387-fea47794261f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80",
+          category: "عطور"
+        },
+        {
+          id: 6,
+          title: "سوار ذهبي",
+          price: 30000,
+          imageUrl: "https://images.unsplash.com/photo-1602173574767-37ac01994b2a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80",
+          category: "مجوهرات"
+        }
+      ]
       
-      setPurchaseStatus({
-        success: true, 
-        message: `تم خصم ${product.price} دينار من رصيدك لشراء ${product.name}`
-      })
-      setTimeout(() => setPurchaseStatus(null), 3000)
-      
-      // إرسال إشعار للمستخدم
-      if (window.Telegram?.WebApp) {
-        window.Telegram.WebApp.showAlert(`تمت عملية الشراء بنجاح! ستستلم ${product.name} قريباً`)
-      }
+      setProducts(mockProducts)
+      setLoading(false)
     } catch (err) {
-      setPurchaseStatus({success: false, message: "حدث خطأ أثناء عملية الشراء"})
-      setTimeout(() => setPurchaseStatus(null), 3000)
+      setError('فشل في تحميل المنتجات')
+      setLoading(false)
+    }
+  }
+
+  const handleProductClick = (product: Product) => {
+    if (window.Telegram?.WebApp) {
+      const message = `مرحباً، أنا مهتم بشراء ${product.title} بسعر ${product.price.toLocaleString()} دينار. هل لا يزال متوفراً؟`
+      window.Telegram.WebApp.openTelegramLink(`https://t.me/Kharwaydo?text=${encodeURIComponent(message)}`)
     }
   }
 
@@ -232,103 +187,49 @@ export default function Home() {
           <h1 className="user-name">
             مرحباً، <span>{user.firstName}</span>!
           </h1>
-          <div className="user-balance">
-            رصيدك: <span>{user.balance.toLocaleString()} DA</span>
+          {user.username && (
+            <p className="user-username">@{user.username}</p>
+          )}
+        </div>
+      </div>
+
+      {/* بطاقة الرصيد */}
+      <div className="balance-card">
+        <div className="balance-label">رصيدك الحالي</div>
+        <div className="balance-amount">
+          {user.points.toLocaleString()} <span>DA</span>
+        </div>
+      </div>
+
+      {/* قائمة المنتجات */}
+      <div className="products-grid">
+        {products.map(product => (
+          <div 
+            key={product.id} 
+            className="product-card"
+            onClick={() => handleProductClick(product)}
+          >
+            <div className="product-image-container">
+              <img 
+                src={product.imageUrl} 
+                alt={product.title}
+                className="product-image"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = '/product-placeholder.png'
+                }}
+              />
+              <div className="product-badge">{product.category}</div>
+            </div>
+            <div className="product-info">
+              <h3 className="product-title">{product.title}</h3>
+              <div className="product-price">{product.price.toLocaleString()} DA</div>
+            </div>
           </div>
-        </div>
+        ))}
       </div>
-
-      {/* أقسام التطبيق */}
-      <div className="tabs">
-        <button 
-          className={`tab-button ${activeTab === 'mediators' ? 'active' : ''}`}
-          onClick={() => setActiveTab('mediators')}
-        >
-          الوسطاء المتاحين
-        </button>
-        <button 
-          className={`tab-button ${activeTab === 'products' ? 'active' : ''}`}
-          onClick={() => setActiveTab('products')}
-        >
-          منتجاتي الرقمية
-        </button>
-      </div>
-
-      {/* قسم الوسطاء */}
-      {activeTab === 'mediators' && (
-        <div className="mediators-list">
-          {mediators.map(mediator => (
-            <div key={mediator.id} className="mediator-card">
-              <div className="mediator-header">
-                <img
-                  src={mediator.photoUrl}
-                  alt={mediator.name}
-                  className="mediator-avatar"
-                />
-                <div className="mediator-info">
-                  <h3 className="mediator-name">{mediator.name}</h3>
-                  <div className="mediator-username">@{mediator.username}</div>
-                  <div className="mediator-rating">
-                    <span className="stars">{"★".repeat(Math.floor(mediator.rating))}</span>
-                    <span className="rating-value">{mediator.rating}</span>
-                  </div>
-                  <div className="mediator-specialty">{mediator.specialty}</div>
-                </div>
-              </div>
-              <div className="mediator-description">
-                {mediator.description}
-              </div>
-              <button 
-                className="contact-button"
-                onClick={() => contactMediator(mediator.username)}
-              >
-                طلب الوسيط
-              </button>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* قسم المنتجات */}
-      {activeTab === 'products' && (
-        <div className="products-grid">
-          {products.map(product => (
-            <div key={product.id} className="product-card">
-              <div className="product-image-container">
-                <img 
-                  src={product.imageUrl} 
-                  alt={product.name}
-                  className="product-image"
-                />
-                <div className="product-price">{product.price.toLocaleString()} DA</div>
-              </div>
-              <div className="product-details">
-                <h3 className="product-name">{product.name}</h3>
-                <div className="product-category">{product.category}</div>
-                <p className="product-description">{product.description}</p>
-                <button 
-                  className="buy-button"
-                  onClick={() => purchaseProduct(product)}
-                  disabled={user.balance < product.price}
-                >
-                  شراء الآن
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* رسالة حالة الشراء */}
-      {purchaseStatus && (
-        <div className={`purchase-message ${purchaseStatus.success ? 'success' : 'error'}`}>
-          {purchaseStatus.message}
-        </div>
-      )}
 
       {/* تذييل الصفحة */}
       <div className="footer">
-        <p>نظام الوسطاء والمنتجات الرقمية</p>
         <p>Developed By <span>Borhane</span></p>
       </div>
     </div>
