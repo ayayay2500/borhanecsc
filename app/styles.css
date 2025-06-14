@@ -37,7 +37,7 @@ body {
   margin: 0 auto;
 }
 
-/* رأس الصفحة - تصميم فخم */
+/* رأس الصفحة */
 .user-header {
   display: flex;
   align-items: center;
@@ -91,7 +91,7 @@ body {
   letter-spacing: 0.5px;
 }
 
-/* بطاقة الرصيد - تصميم ثلاثي الأبعاد */
+/* بطاقة الرصيد */
 .balance-card {
   background: linear-gradient(135deg, var(--primary-color), #8c7ae6);
   color: var(--text-color);
@@ -124,10 +124,6 @@ body {
   box-shadow: 0 15px 35px rgba(108, 92, 231, 0.5);
 }
 
-.balance-card:hover::before {
-  transform: rotate(45deg) translate(10px, 10px);
-}
-
 .balance-label {
   font-size: 1.3rem;
   margin-bottom: 15px;
@@ -150,7 +146,7 @@ body {
   margin-left: 5px;
 }
 
-/* تبويبات التنقل - تصميم أنيق */
+/* تبويبات التنقل */
 .tabs-container {
   display: flex;
   justify-content: center;
@@ -203,7 +199,7 @@ body {
   background-color: rgba(255, 255, 255, 0.05);
 }
 
-/* شبكة المنتجات - تصميم فاخر */
+/* شبكة المنتجات مع تعديلات البادجات */
 .products-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -261,18 +257,47 @@ body {
   transform: scale(1.1);
 }
 
+/* تحسينات البادجات هنا */
 .product-badge {
   position: absolute;
-  bottom: 15px;
+  top: 15px;
   left: 15px;
   background-color: var(--primary-color);
   color: var(--text-color);
-  padding: 8px 15px;
+  padding: 6px 12px;
   border-radius: 20px;
-  font-size: 0.85rem;
+  font-size: 0.75rem;
   font-weight: 700;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
   z-index: 2;
+  opacity: 0.9;
+  transition: var(--transition);
+  max-width: 80%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.product-badge[data-category="باونتي"] {
+  background-color: var(--success-color);
+}
+
+.product-badge[data-category="شحن"] {
+  background-color: var(--info-color);
+}
+
+.product-badge[data-category="تحويل"] {
+  background-color: var(--warning-color);
+  color: #000;
+}
+
+.product-badge[data-category="لايوجد"] {
+  background-color: var(--danger-color);
+}
+
+.product-card:hover .product-badge {
+  opacity: 1;
+  transform: translateY(-3px);
 }
 
 .product-info {
@@ -297,7 +322,7 @@ body {
   align-items: center;
 }
 
-/* قائمة الوسطاء - تصميم مميز */
+/* قائمة الوسطاء */
 .brokers-list {
   display: flex;
   flex-direction: column;
@@ -445,11 +470,7 @@ body {
   box-shadow: 0 10px 30px rgba(108, 92, 231, 0.5);
 }
 
-.contact-broker-button:hover::before {
-  left: 100%;
-}
-
-/* حالات التحميل والخطأ - تصميم متحرك */
+/* حالات التحميل والخطأ */
 .loading-container, .error-container {
   display: flex;
   flex-direction: column;
@@ -518,7 +539,7 @@ body {
   box-shadow: 0 10px 35px rgba(108, 92, 231, 0.5);
 }
 
-/* تذييل الصفحة - تصميم أنيق */
+/* تذييل الصفحة */
 .footer {
   text-align: center;
   padding: 40px 0;
@@ -548,6 +569,10 @@ button:active, .product-card:active, .broker-card:active {
 
 .products-grid, .brokers-list {
   animation: fadeIn 0.8s ease-out;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
 /* تصميم متجاوب */
