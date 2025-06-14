@@ -161,7 +161,6 @@ export default function Home() {
           description: "تاجر حسابات جواهر + وسيط ",
           isOnline: true
         },
-        {
       ]
       
       setBrokers(mockBrokers)
