@@ -40,7 +40,7 @@ type Broker = {
 }
 
 type BannedUser = {
-  username: string
+  telegramId: number
   reason: string
 }
 
@@ -56,10 +56,22 @@ export default function Home() {
 
   // قائمة المحظورين (يمكن جلبها من API أو قاعدة بيانات)
   const bannedUsers: BannedUser[] = [
-    { username: "ss", reason: "ضرب القاع على الغش" },
-    { username: "ss", reason: "إرسال رسائل مزعجة" },
-    // يمكن إضافة المزيد هنا
+    { telegramId: 123456789, reason: "ضرب القاع على الغش" },
+    { telegramId: 987654321, reason: "إرسال رسائل مزعجة" },
   ]
+
+  useEffect(() => {
+    const handleContextMenu = (e: Event) => e.preventDefault()
+    const handleSelectStart = (e: Event) => e.preventDefault()
+    
+    document.addEventListener('contextmenu', handleContextMenu)
+    document.addEventListener('selectstart', handleSelectStart)
+    
+    return () => {
+      document.removeEventListener('contextmenu', handleContextMenu)
+      document.removeEventListener('selectstart', handleSelectStart)
+    }
+  }, [])
 
   useEffect(() => {
     if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
@@ -70,8 +82,7 @@ export default function Home() {
       const initDataUnsafe = tg.initDataUnsafe || {}
       
       if (initDataUnsafe.user) {
-        // التحقق من الحظر قبل تحميل البيانات
-        checkIfBanned(initDataUnsafe.user.username)
+        checkIfBanned(initDataUnsafe.user.id)
         
         if (!isBanned) {
           fetchUserData(initDataUnsafe.user)
@@ -86,10 +97,8 @@ export default function Home() {
     }
   }, [])
 
-  const checkIfBanned = (username?: string) => {
-    if (!username) return
-    
-    const bannedUser = bannedUsers.find(user => user.username.toLowerCase() === username.toLowerCase())
+  const checkIfBanned = (telegramId: number) => {
+    const bannedUser = bannedUsers.find(user => user.telegramId === telegramId)
     if (bannedUser) {
       setIsBanned(true)
       setBanReason(bannedUser.reason)
@@ -250,7 +259,6 @@ export default function Home() {
 
   return (
     <div className="main-container">
-      {/* رأس الصفحة */}
       <div className="user-header">
         <img
           src={user.photoUrl || '/default-avatar.png'}
@@ -270,7 +278,6 @@ export default function Home() {
         </div>
       </div>
 
-      {/* بطاقة الرصيد */}
       <div className="balance-card">
         <div className="balance-label">رصيدك الحالي</div>
         <div className="balance-amount">
@@ -278,7 +285,6 @@ export default function Home() {
         </div>
       </div>
 
-      {/* تبويبات التنقل */}
       <div className="tabs-container">
         <button 
           className={`tab-button ${activeTab === 'products' ? 'active' : ''}`}
@@ -294,7 +300,6 @@ export default function Home() {
         </button>
       </div>
 
-      {/* محتوى التبويب النشط */}
       {activeTab === 'products' ? (
         <div className="products-grid">
           {products.map(product => (
@@ -357,7 +362,6 @@ export default function Home() {
         </div>
       )}
 
-      {/* تذييل الصفحة */}
       <div className="footer">
         <p>Developed By <span>Borhane San</span></p>
       </div>
