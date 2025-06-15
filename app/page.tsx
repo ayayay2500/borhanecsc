@@ -67,8 +67,8 @@ export default function Home() {
   const [showAdminSheet, setShowAdminSheet] = useState(false)
 
   const bannedUsers: BannedUser[] = [
-    { telegramId: 5149849049, reason: "Admin Test Ban" },
-    { telegramId: 987654321, reason: "إرسال رسائل مزعجة" },
+    { telegramId: 0000, reason: "Admin Test Ban" },
+    { telegramId: 0000, reason: "إرسال رسائل مزعجة" },
   ]
 
   useEffect(() => {
