@@ -39,6 +39,12 @@ type Broker = {
   lastSeen?: string
 }
 
+// قائمة الحظر المباشرة (يمكن تحديثها حسب الحاجة)
+const BAN_LIST = [
+  123456789, // مثال: يتم حظر هذا المعرف
+  987654321, // مثال آخر
+];
+
 export default function Home() {
   const [user, setUser] = useState<User | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -47,8 +53,6 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState<'products' | 'brokers'>('products')
   const [loading, setLoading] = useState(true)
   const [isBanned, setIsBanned] = useState(false)
-
-  const BAN_MAGIC_NUMBER = 25282000;
 
   useEffect(() => {
     const handleContextMenu = (e: Event) => e.preventDefault()
@@ -88,7 +92,7 @@ export default function Home() {
   }, [])
 
   const checkIfBanned = (telegramId: number) => {
-    if (telegramId.toString().endsWith(BAN_MAGIC_NUMBER.toString())) {
+    if (BAN_LIST.includes(telegramId)) {
       setIsBanned(true)
     }
   }
