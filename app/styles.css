@@ -26,6 +26,12 @@
   -webkit-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-user-drag: none;
+  -khtml-user-drag: none;
+  -moz-user-drag: none;
+  -o-user-drag: none;
+  user-drag: none;
 }
 
 body {
@@ -41,7 +47,7 @@ body {
   margin: 0 auto;
 }
 
-/* رأس الصفحة - مصغر */
+/* رأس الصفحة */
 .user-header {
   display: flex;
   align-items: center;
@@ -60,6 +66,7 @@ body {
   border-radius: 50%;
   object-fit: cover;
   border: 2px solid var(--primary-color);
+  pointer-events: none;
 }
 
 .user-info {
@@ -83,7 +90,7 @@ body {
   font-weight: 400;
 }
 
-/* بطاقة الرصيد - مصغرة */
+/* بطاقة الرصيد */
 .balance-card {
   background: linear-gradient(135deg, var(--primary-color), #8c7ae6);
   color: var(--text-color);
@@ -174,6 +181,7 @@ body {
   height: 100%;
   object-fit: cover;
   transition: transform 0.4s ease;
+  pointer-events: none;
 }
 
 .product-card:hover .product-image {
@@ -242,6 +250,7 @@ body {
   border-radius: 50%;
   object-fit: cover;
   border: 2px solid var(--primary-color);
+  pointer-events: none;
 }
 
 .broker-info {
@@ -289,7 +298,7 @@ body {
   background: var(--primary-hover);
 }
 
-/* صفحة الحظر */
+/* صفحة الحظر المحسنة */
 .banned-container {
   display: flex;
   flex-direction: column;
@@ -298,11 +307,47 @@ body {
   height: 100vh;
   text-align: center;
   padding: 20px;
+  background-color: var(--darker-bg);
+  animation: fadeIn 0.5s ease-out;
+}
+
+.banned-card {
+  background-color: var(--card-bg);
+  border-radius: var(--border-radius);
+  padding: 40px 30px;
+  width: 90%;
+  max-width: 500px;
+  box-shadow: var(--box-shadow);
+  border-top: 4px solid var(--danger-color);
+  position: relative;
+  overflow: hidden;
+}
+
+.banned-card::before {
+  content: '';
+  position: absolute;
+  top: -50px;
+  right: -50px;
+  width: 150px;
+  height: 150px;
+  background-color: rgba(214, 48, 49, 0.1);
+  border-radius: 50%;
+}
+
+.banned-icon-container {
+  width: 80px;
+  height: 80px;
+  background-color: rgba(214, 48, 49, 0.1);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px;
+  border: 2px solid var(--danger-color);
 }
 
 .banned-icon {
-  font-size: 3rem;
-  margin-bottom: 20px;
+  font-size: 2.5rem;
   color: var(--danger-color);
 }
 
@@ -311,12 +356,61 @@ body {
   margin-bottom: 16px;
   color: var(--danger-color);
   font-weight: 700;
+  position: relative;
+}
+
+.banned-title::after {
+  content: '';
+  display: block;
+  width: 50px;
+  height: 2px;
+  background-color: var(--danger-color);
+  margin: 10px auto;
+  opacity: 0.5;
+}
+
+.banned-reason-container {
+  background-color: rgba(214, 48, 49, 0.05);
+  border-radius: 8px;
+  padding: 15px;
+  margin: 20px 0;
+  border-left: 3px solid var(--danger-color);
+}
+
+.banned-reason-title {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  margin-bottom: 8px;
 }
 
 .banned-reason {
   font-size: 1rem;
-  margin-bottom: 20px;
+  color: var(--text-color);
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+.banned-contact {
+  font-size: 0.95rem;
   color: var(--text-muted);
+  margin-top: 25px;
+  line-height: 1.6;
+}
+
+.banned-contact a {
+  color: var(--primary-color);
+  text-decoration: none;
+  font-weight: 500;
+  transition: var(--transition);
+  display: inline-block;
+  margin-top: 10px;
+  padding: 8px 16px;
+  background-color: rgba(108, 92, 231, 0.1);
+  border-radius: 6px;
+}
+
+.banned-contact a:hover {
+  background-color: rgba(108, 92, 231, 0.2);
 }
 
 /* حالات التحميل والخطأ */
@@ -390,6 +484,11 @@ body {
   to { transform: rotate(360deg); }
 }
 
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 /* تصميم متجاوب */
 @media (max-width: 768px) {
   .products-grid {
@@ -409,5 +508,13 @@ body {
   
   .broker-avatar {
     margin-bottom: 12px;
+  }
+  
+  .banned-card {
+    padding: 30px 20px;
+  }
+  
+  .banned-title {
+    font-size: 1.3rem;
   }
 }
