@@ -44,17 +44,28 @@ type BannedUser = {
   reason: string
 }
 
+type AdminUser = {
+  telegramId: number
+  firstName: string
+  username?: string
+  role: 'admin' | 'moderator' | 'superModerator'
+  lastActive: string
+}
+
 export default function Home() {
   const [user, setUser] = useState<User | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [products, setProducts] = useState<Product[]>([])
   const [brokers, setBrokers] = useState<Broker[]>([])
+  const [adminUsers, setAdminUsers] = useState<AdminUser[]>([])
   const [activeTab, setActiveTab] = useState<'products' | 'brokers'>('products')
   const [loading, setLoading] = useState(true)
   const [isBanned, setIsBanned] = useState(false)
   const [banReason, setBanReason] = useState('')
+  const [showAdminPanel, setShowAdminPanel] = useState(false)
+  const [showBannedList, setShowBannedList] = useState(false)
+  const [showAdminSheet, setShowAdminSheet] = useState(false)
 
-  // قائمة المحظورين (يمكن جلبها من API أو قاعدة بيانات)
   const bannedUsers: BannedUser[] = [
     { telegramId: 5149849049, reason: "Admin Test Ban" },
     { telegramId: 987654321, reason: "إرسال رسائل مزعجة" },
@@ -63,13 +74,24 @@ export default function Home() {
   useEffect(() => {
     const handleContextMenu = (e: Event) => e.preventDefault()
     const handleSelectStart = (e: Event) => e.preventDefault()
+    const handleLongPress = (e: TouchEvent) => {
+      if (e.target instanceof HTMLElement && e.target.tagName === 'IMG') {
+        e.preventDefault()
+      }
+    }
     
     document.addEventListener('contextmenu', handleContextMenu)
     document.addEventListener('selectstart', handleSelectStart)
+    document.addEventListener('touchstart', handleLongPress, { passive: false })
+    document.addEventListener('touchmove', handleLongPress, { passive: false })
+    document.addEventListener('touchend', handleLongPress, { passive: false })
     
     return () => {
       document.removeEventListener('contextmenu', handleContextMenu)
       document.removeEventListener('selectstart', handleSelectStart)
+      document.removeEventListener('touchstart', handleLongPress)
+      document.removeEventListener('touchmove', handleLongPress)
+      document.removeEventListener('touchend', handleLongPress)
     }
   }, [])
 
@@ -88,6 +110,7 @@ export default function Home() {
           fetchUserData(initDataUnsafe.user)
           fetchProducts()
           fetchBrokers()
+          fetchAdmins()
         }
       } else {
         setError('لا توجد بيانات مستخدم متاحة')
@@ -208,6 +231,30 @@ export default function Home() {
     }
   }
 
+  const fetchAdmins = async () => {
+    try {
+      const mockAdmins: AdminUser[] = [
+        {
+          telegramId: 5149849049,
+          firstName: "Borhane",
+          username: "Kharwaydo",
+          role: "admin",
+          lastActive: new Date().toISOString()
+        },
+        {
+          telegramId: 2047274737,
+          firstName: "Seidmmf",
+          username: "Seif 🍖BBQ",
+          role: "moderator",
+          lastActive: new Date(Date.now() - 3600000).toISOString()
+        }
+      ]
+      setAdminUsers(mockAdmins)
+    } catch (err) {
+      console.error('Failed to fetch admins', err)
+    }
+  }
+
   const handleProductClick = (product: Product) => {
     if (window.Telegram?.WebApp) {
       const message = `مرحباً، أنا مهتم بشراء ${product.title} بسعر ${product.price.toLocaleString()} دولار. هل لا يزال متوفراً؟`
@@ -222,13 +269,36 @@ export default function Home() {
     }
   }
 
+  const toggleAdminPanel = () => setShowAdminPanel(!showAdminPanel)
+  const toggleBannedList = () => setShowBannedList(!showBannedList)
+  const toggleAdminSheet = () => setShowAdminSheet(!showAdminSheet)
+
+  const isAdmin = adminUsers.some(admin => 
+    admin.telegramId === user?.telegramId && admin.role
+  )
+
+  const renderAdminBadge = (role: 'admin' | 'moderator' | 'superModerator') => {
+    switch(role) {
+      case 'admin':
+        return <span className="admin-badge admin">مسؤول</span>
+      case 'superModerator':
+        return <span className="admin-badge super-moderator">مشرف رئيسي</span>
+      case 'moderator':
+        return <span className="admin-badge moderator">مشرف</span>
+      default:
+        return null
+    }
+  }
+
   if (isBanned) {
     return (
       <div className="banned-container">
         <div className="banned-icon">🚫</div>
         <h1 className="banned-title">لقد تم حظرك</h1>
-        <p className="banned-reason">السبب: {banReason}</p>
-        <p className="banned-contact">للاستفسار يمكنك التواصل مع المسؤول </p>
+        <div className="banned-reason-box">
+          <p className="banned-reason">السبب: {banReason}</p>
+        </div>
+        <p className="banned-contact">للاستفسار يمكنك التواصل مع المسؤول</p>
       </div>
     )
   }
@@ -359,6 +429,70 @@ export default function Home() {
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {isAdmin && (
+        <div className="admin-panel">
+          <button 
+            className="admin-button"
+            onClick={toggleAdminPanel}
+          >
+            لوحة الإدارة ⚙️
+          </button>
+
+          {showAdminPanel && (
+            <div className="admin-dropdown">
+              <button onClick={toggleBannedList}>قائمة المحظورين</button>
+              <button onClick={toggleAdminSheet}>واجهة الإدارة</button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {showBannedList && (
+        <div className="modal-overlay">
+          <div className="banned-users-modal">
+            <div className="modal-header">
+              <h3>قائمة المحظورين</h3>
+              <button className="close-modal" onClick={toggleBannedList}>×</button>
+            </div>
+            <div className="banned-list">
+              {bannedUsers.map((user, index) => (
+                <div key={index} className="banned-user-item">
+                  <div className="banned-user-id">ID: {user.telegramId}</div>
+                  <div className="banned-reason">السبب: {user.reason}</div>
+                  <button className="unban-button">إلغاء الحظر</button>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showAdminSheet && (
+        <div className="modal-overlay">
+          <div className="admin-sheet-modal">
+            <div className="modal-header">
+              <h3>واجهة الإدارة</h3>
+              <button className="close-modal" onClick={toggleAdminSheet}>×</button>
+            </div>
+            <div className="admin-list">
+              <h4>قائمة الإداريين</h4>
+              {adminUsers.map((admin, index) => (
+                <div key={index} className="admin-item">
+                  <div className="admin-info">
+                    <span className="admin-name">{admin.firstName}</span>
+                    <span className="admin-username">@{admin.username}</span>
+                    {renderAdminBadge(admin.role)}
+                  </div>
+                  <div className="admin-last-active">
+                    آخر نشاط: {new Date(admin.lastActive).toLocaleString()}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       )}
 
