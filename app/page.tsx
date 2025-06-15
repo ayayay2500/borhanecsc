@@ -56,7 +56,7 @@ export default function Home() {
 
   // قائمة المحظورين (يمكن جلبها من API أو قاعدة بيانات)
   const bannedUsers: BannedUser[] = [
-    { telegramId: 123456789, reason: "ضرب القاع على الغش" },
+    { telegramId: 5149849049, reason: "Admin Test Ban" },
     { telegramId: 987654321, reason: "إرسال رسائل مزعجة" },
   ]
 
