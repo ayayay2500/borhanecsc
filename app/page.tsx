@@ -188,7 +188,7 @@ export default function Home() {
           firstName: "Borhane San",
           photoUrl: "https://i.postimg.cc/JzZkhSCY/Screenshot-2025-05-08-20-30-56-49-50ef9f5a0f3fc24b6f0ffc8843167fe4.jpg",
           description: "تاجر حسابات جواهر + وسيط ",
-          isOnline: false
+          isOnline: true
         },
       ]
       
