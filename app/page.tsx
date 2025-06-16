@@ -276,7 +276,7 @@ export default function Home() {
           className={`tab-button ${activeTab === 'tasks' ? 'active' : ''}`}
           onClick={() => setActiveTab('tasks')}
         >
-          المهام
+          الهدية اليومية
         </button>
       </div>
 
