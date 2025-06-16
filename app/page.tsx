@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState } from 'react'
 import { WebApp } from '@twa-dev/types'
 import './styles.css'
 
@@ -19,6 +19,7 @@ type User = {
   username?: string
   points: number
   photoUrl?: string
+  status: number
 }
 
 type Product = {
@@ -39,12 +40,6 @@ type Broker = {
   lastSeen?: string
 }
 
-// قائمة الحظر المباشرة (يمكن تحديثها حسب الحاجة)
-const BAN_LIST = [
-  123456789, // مثال: يتم حظر هذا المعرف
-  987654321, // مثال آخر
-];
-
 export default function Home() {
   const [user, setUser] = useState<User | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -52,7 +47,6 @@ export default function Home() {
   const [brokers, setBrokers] = useState<Broker[]>([])
   const [activeTab, setActiveTab] = useState<'products' | 'brokers'>('products')
   const [loading, setLoading] = useState(true)
-  const [isBanned, setIsBanned] = useState(false)
 
   useEffect(() => {
     const handleContextMenu = (e: Event) => e.preventDefault()
@@ -76,55 +70,59 @@ export default function Home() {
       const initDataUnsafe = tg.initDataUnsafe || {}
       
       if (initDataUnsafe.user) {
-        checkIfBanned(initDataUnsafe.user.id)
-        
-        if (!isBanned) {
-          fetchUserData(initDataUnsafe.user)
-          fetchProducts()
-          fetchBrokers()
-        }
+        checkUserStatus(initDataUnsafe.user)
       } else {
         setError('لا توجد بيانات مستخدم متاحة')
+        setLoading(false)
       }
     } else {
       setError('الرجاء فتح البوت عبر Telegram')
+      setLoading(false)
     }
   }, [])
 
-  const checkIfBanned = (telegramId: number) => {
-    if (BAN_LIST.includes(telegramId)) {
-      setIsBanned(true)
-    }
-  }
-
-  const fetchUserData = useCallback(async (tgUser: any) => {
+  const checkUserStatus = async (tgUser: any) => {
     try {
-      const res = await fetch('/api/user', {
+      const res = await fetch('/api/check-user', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(tgUser),
+        body: JSON.stringify({
+          telegramId: tgUser.id,
+          firstName: tgUser.first_name,
+          lastName: tgUser.last_name,
+          username: tgUser.username,
+          photoUrl: tgUser.photo_url
+        }),
       })
       
       const data = await res.json()
       
-      if (data.error) {
-        setError(data.error)
-      } else {
+      if (data.status === 1) {
+        setError('حسابك محظور. الرجاء التواصل مع المسؤول')
+        return
+      }
+
+      if (data.user) {
         setUser({
           telegramId: tgUser.id,
           firstName: tgUser.first_name,
           lastName: tgUser.last_name,
           username: tgUser.username,
-          points: data.points || 0,
-          photoUrl: tgUser.photo_url
+          points: data.user.points || 0,
+          photoUrl: tgUser.photo_url,
+          status: data.user.status
         })
+        fetchProducts()
+        fetchBrokers()
       }
     } catch (err) {
-      setError('فشل في تحميل بيانات المستخدم')
+      setError('فشل في التحقق من حالة المستخدم')
+    } finally {
+      setLoading(false)
     }
-  }, [])
+  }
 
   const fetchProducts = async () => {
     try {
@@ -193,10 +191,8 @@ export default function Home() {
       ]
       
       setBrokers(mockBrokers)
-      setLoading(false)
     } catch (err) {
       setError('فشل في تحميل بيانات الوسطاء')
-      setLoading(false)
     }
   }
 
@@ -214,21 +210,19 @@ export default function Home() {
     }
   }
 
-  if (isBanned) {
-    return (
-      <div className="banned-container">
-        <div className="banned-icon">🚫</div>
-        <h1 className="banned-title">لقد تم حظرك</h1>
-        <p className="banned-contact">إذا تم هذا بالخطأ، يرجى التواصل مع المسؤول</p>
-      </div>
-    )
-  }
-
   if (error) {
     return (
       <div className="error-container">
         <div className="error-icon">⚠️</div>
         <div className="error-message">{error}</div>
+        {error.includes('حظور') && (
+          <button 
+            className="contact-admin-btn"
+            onClick={() => window.Telegram?.WebApp.openTelegramLink('https://t.me/Kharwaydo')}
+          >
+            التواصل مع المسؤول
+          </button>
+        )}
         <button 
           className="retry-button"
           onClick={() => window.location.reload()}
@@ -243,7 +237,7 @@ export default function Home() {
     return (
       <div className="loading-container">
         <div className="loading-spinner"></div>
-        <div className="loading-text">لا تقلق يولد 🤣</div>
+        <div className="loading-text">جاري التحميل...</div>
       </div>
     )
   }
