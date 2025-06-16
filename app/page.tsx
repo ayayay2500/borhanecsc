@@ -19,8 +19,8 @@ type User = {
   username?: string
   points: number
   photoUrl?: string
-  status?: number
-  banReason?: string
+  status?: number // 0 = غير محظور, 1 = محظور
+  banReason?: string // سبب الحظر الجديد
 }
 
 type Product = {
@@ -49,7 +49,6 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState<'products' | 'brokers'>('products')
   const [loading, setLoading] = useState(true)
   const [isBanned, setIsBanned] = useState(false)
-  const [showBanModal, setShowBanModal] = useState(false)
 
   useEffect(() => {
     const handleContextMenu = (e: Event) => e.preventDefault()
@@ -73,12 +72,6 @@ export default function Home() {
       setError('الرجاء فتح البوت عبر Telegram')
     }
   }, [])
-
-  const handleInteraction = () => {
-    if (isBanned && !showBanModal) {
-      setShowBanModal(true)
-    }
-  }
 
   const fetchUserData = useCallback(async (tgUser: any) => {
     try {
@@ -105,7 +98,7 @@ export default function Home() {
             points: data.points || 0,
             photoUrl: tgUser.photo_url,
             status: data.status,
-            banReason: data.banReason || 'تم حظر حسابك من قبل الإدارة'
+            banReason: data.banReason || 'تم حظر حسابك'
           })
           return
         }
@@ -194,47 +187,20 @@ export default function Home() {
   }
 
   const handleProductClick = (product: Product) => {
-    if (!isBanned && window.Telegram?.WebApp) {
+    if (window.Telegram?.WebApp) {
       const message = `مرحباً، أنا مهتم بشراء ${product.title} بسعر ${product.price.toLocaleString()} دولار. هل لا يزال متوفراً؟`
       window.Telegram.WebApp.openTelegramLink(`https://t.me/Kharwaydo?text=${encodeURIComponent(message)}`)
-    } else {
-      handleInteraction()
     }
   }
 
   const handleBrokerClick = (broker: Broker) => {
-    if (!isBanned && window.Telegram?.WebApp) {
+    if (window.Telegram?.WebApp) {
       const message = `مرحباً ${broker.firstName}، أنا مهتم بالتعامل معك كوسيط موثوق. هل يمكنك مساعدتي؟`
       window.Telegram.WebApp.openTelegramLink(`https://t.me/${broker.username}?text=${encodeURIComponent(message)}`)
-    } else {
-      handleInteraction()
     }
   }
 
   if (isBanned && user?.banReason) {
-    if (showBanModal) {
-      return (
-        <div className="ban-modal-overlay">
-          <div className="ban-modal">
-            <div className="ban-modal-header">
-              <div className="ban-modal-icon">🚫</div>
-              <h2 className="ban-modal-title">لقد تم حظرك</h2>
-            </div>
-            <div className="ban-modal-body">
-              <p className="ban-modal-reason">{user.banReason}</p>
-              <p className="ban-modal-admin">Admin: Borhane</p>
-            </div>
-            <button 
-              className="ban-modal-button"
-              onClick={() => window.location.reload()}
-            >
-              موافق
-            </button>
-          </div>
-        </div>
-      )
-    }
-
     return (
       <div className="banned-container">
         <div className="banned-icon">🚫</div>
@@ -270,7 +236,7 @@ export default function Home() {
 
   return (
     <div className="main-container">
-      <div className="user-header" onClick={handleInteraction}>
+      <div className="user-header">
         <img
           src={user.photoUrl || '/default-avatar.png'}
           alt={`${user.firstName}'s profile`}
@@ -285,7 +251,7 @@ export default function Home() {
         </div>
       </div>
 
-      <div className="balance-card" onClick={handleInteraction}>
+      <div className="balance-card">
         <div className="balance-label">رصيدك الحالي</div>
         <div className="balance-amount">
           {user.points.toLocaleString()} <span>XP</span>
@@ -295,13 +261,13 @@ export default function Home() {
       <div className="tabs-container">
         <button 
           className={`tab-button ${activeTab === 'products' ? 'active' : ''}`}
-          onClick={() => !isBanned && setActiveTab('products')}
+          onClick={() => setActiveTab('products')}
         >
           المنتجات
         </button>
         <button 
           className={`tab-button ${activeTab === 'brokers' ? 'active' : ''}`}
-          onClick={() => !isBanned && setActiveTab('brokers')}
+          onClick={() => setActiveTab('brokers')}
         >
           وسطاء موثوقون
         </button>
