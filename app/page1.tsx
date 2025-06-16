@@ -13,45 +13,88 @@ declare global {
 }
 
 export default function DailyReward() {
+  const [user, setUser] = useState<any>(null)
   const [error, setError] = useState<string | null>(null)
   const [notification, setNotification] = useState('')
   const [nextClaimTime, setNextClaimTime] = useState<number | null>(null)
   const [canClaim, setCanClaim] = useState(true)
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    // التحقق من localStorage لمعرفة آخر وقت تم فيه المطالبة بالجائزة
-    const lastClaimTime = localStorage.getItem('lastClaimTime')
-    if (lastClaimTime) {
-      const now = new Date().getTime()
-      const timeDiff = now - parseInt(lastClaimTime)
-      const hoursDiff = timeDiff / (1000 * 60 * 60)
+    if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
+      const tg = window.Telegram.WebApp
+      tg.ready()
 
-      if (hoursDiff < 24) {
-        setCanClaim(false)
-        const nextClaim = parseInt(lastClaimTime) + 24 * 60 * 60 * 1000
-        setNextClaimTime(nextClaim)
+      const initDataUnsafe = tg.initDataUnsafe || {}
+      
+      if (initDataUnsafe.user) {
+        const telegramUser = initDataUnsafe.user
+        setUser(telegramUser)
+        
+        // التحقق من localStorage باستخدام telegramId كمفتاح
+        const lastClaimKey = `lastClaimTime_${telegramUser.id}`
+        const lastClaimTime = localStorage.getItem(lastClaimKey)
+        
+        if (lastClaimTime) {
+          const now = new Date().getTime()
+          const timeDiff = now - parseInt(lastClaimTime)
+          const hoursDiff = timeDiff / (1000 * 60 * 60)
+
+          if (hoursDiff < 24) {
+            setCanClaim(false)
+            const nextClaim = parseInt(lastClaimTime) + 24 * 60 * 60 * 1000
+            setNextClaimTime(nextClaim)
+          }
+        }
+        
+        setIsLoading(false)
+      } else {
+        setError('لا توجد معلومات مستخدم متاحة')
+        setIsLoading(false)
       }
+    } else {
+      setError('من فضلك افتح البوت على تلجرام')
+      setIsLoading(false)
     }
   }, [])
 
-  const handleClaimReward = () => {
+  const handleClaimReward = async () => {
+    if (!user || !canClaim || isLoading) return
+
     setIsLoading(true)
     
-    // محاكاة إرسال الطلب إلى الخادم
-    setTimeout(() => {
-      const now = new Date().getTime()
-      localStorage.setItem('lastClaimTime', now.toString())
+    try {
+      // إرسال طلب لإضافة النقطة إلى رصيد المستخدم
+      const res = await fetch('/api/increase-points', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ telegramId: user.id }),
+      })
       
-      setNotification('مبروك! لقد حصلت على جائزتك اليومية 🎁')
-      setTimeout(() => setNotification(''), 3000)
+      const data = await res.json()
       
-      setCanClaim(false)
-      const nextClaim = now + 24 * 60 * 60 * 1000
-      setNextClaimTime(nextClaim)
-      
+      if (data.success) {
+        // تخزين وقت المطالبة في localStorage باستخدام telegramId كمفتاح
+        const lastClaimKey = `lastClaimTime_${user.id}`
+        const now = new Date().getTime()
+        localStorage.setItem(lastClaimKey, now.toString())
+        
+        setNotification('مبروك! لقد حصلت على نقطتك اليومية 🎁')
+        setTimeout(() => setNotification(''), 3000)
+        
+        setCanClaim(false)
+        const nextClaim = now + 24 * 60 * 60 * 1000
+        setNextClaimTime(nextClaim)
+      } else {
+        setError(data.message || 'فشل في إضافة النقطة')
+      }
+    } catch (err) {
+      setError('حدث خطأ أثناء المطالبة بالنقطة')
+    } finally {
       setIsLoading(false)
-    }, 1000)
+    }
   }
 
   const formatTimeRemaining = () => {
@@ -74,6 +117,10 @@ export default function DailyReward() {
 
   if (error) {
     return <div className="container mx-auto p-4 text-red-500 text-center">{error}</div>
+  }
+
+  if (isLoading) {
+    return <div className="container mx-auto p-4 text-center">...جار التحميل</div>
   }
 
   return (
