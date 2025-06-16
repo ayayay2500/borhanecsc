@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import { WebApp } from '@twa-dev/types'
 import './styles.css'
+import Page1 from './page1' // استيراد ملف page1.ts
 
 declare global {
   interface Window {
@@ -46,7 +47,7 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null)
   const [products, setProducts] = useState<Product[]>([])
   const [brokers, setBrokers] = useState<Broker[]>([])
-  const [activeTab, setActiveTab] = useState<'products' | 'brokers'>('products')
+  const [activeTab, setActiveTab] = useState<'products' | 'brokers' | 'tasks'>('products')
   const [loading, setLoading] = useState(true)
   const [isBanned, setIsBanned] = useState(false)
 
@@ -271,6 +272,12 @@ export default function Home() {
         >
           وسطاء موثوقون
         </button>
+        <button 
+          className={`tab-button ${activeTab === 'tasks' ? 'active' : ''}`}
+          onClick={() => setActiveTab('tasks')}
+        >
+          المهام
+        </button>
       </div>
 
       {activeTab === 'products' ? (
@@ -299,7 +306,7 @@ export default function Home() {
             </div>
           ))}
         </div>
-      ) : (
+      ) : activeTab === 'brokers' ? (
         <div className="brokers-list">
           {brokers.map(broker => (
             <div 
@@ -331,6 +338,8 @@ export default function Home() {
             </div>
           ))}
         </div>
+      ) : (
+        <Page1 /> // عرض محتوى page1.ts عند اختيار تبويب المهام
       )}
 
       <div className="footer">
