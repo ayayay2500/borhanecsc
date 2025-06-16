@@ -104,7 +104,7 @@ export default function DailyReward() {
       const data = await res.json()
       
       if (data.success) {
-        setNotification('🎉 حصلت على جائزتك اليومية!')
+        setNotification('🎉 بصحتك تحصلت على الهدية!')
         setCanClaim(false)
         startCountdown(data.nextClaimTime)
       } else {
