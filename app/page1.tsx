@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { WebApp } from '@twa-dev/types'
-import './styles.css'
+import './task.css'
 
 declare global {
   interface Window {
