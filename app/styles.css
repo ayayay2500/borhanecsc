@@ -1,7 +1,5 @@
-/* الخطوط */
-@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap');
+/* styles.css - كامل مع التعديلات المطلوبة */
 
-/* المتغيرات */
 :root {
   --primary: #6c5ce7;
   --primary-light: #a29bfe;
@@ -32,11 +30,10 @@
 }
 
 body {
-  font-family: 'Tajawal', sans-serif;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   background-color: var(--darker);
   color: var(--light);
-  line-height: 1.6;
-  overflow-x: hidden;
+  line-height: 1.5;
 }
 
 img {
@@ -44,7 +41,6 @@ img {
   -webkit-user-drag: none;
 }
 
-/* الصفحة الرئيسية */
 .main-container {
   max-width: 100%;
   padding: 1rem;
@@ -97,13 +93,36 @@ img {
   opacity: 0.8;
 }
 
-/* بطاقة الرصيد */
+/* بطاقة الرصيد المُحسَّنة */
 .balance-card {
   background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-  padding: 1.2rem;
+  padding: 1.5rem;
   border-radius: var(--radius-md);
   margin-bottom: 1.5rem;
-  box-shadow: 0 5px 15px rgba(108, 92, 231, 0.3);
+  box-shadow: 0 8px 24px rgba(108, 92, 231, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.balance-card::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(
+    circle, 
+    rgba(255, 255, 255, 0.15) 0%, 
+    transparent 70%
+  );
+  transform: rotate(30deg);
+  animation: shine 6s linear infinite;
+}
+
+@keyframes shine {
+  0% { transform: rotate(30deg) translate(-10%, -10%); }
+  100% { transform: rotate(30deg) translate(10%, 10%); }
 }
 
 .balance-label {
@@ -116,6 +135,7 @@ img {
   font-size: 1.8rem;
   font-weight: 700;
   color: white;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 .balance-amount span {
@@ -123,7 +143,97 @@ img {
   color: rgba(255, 255, 255, 0.8);
 }
 
-/* التبويبات */
+/* صفحة الحظر المُحسَّنة */
+.banned-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 2rem;
+  background: linear-gradient(135deg, #1a1a2e 0%, var(--darker) 100%);
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.banned-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: 
+    radial-gradient(circle at 20% 30%, rgba(255, 0, 0, 0.08) 0%, transparent 25%),
+    radial-gradient(circle at 80% 70%, rgba(255, 0, 0, 0.08) 0%, transparent 25%);
+  animation: pulse 12s ease infinite alternate;
+}
+
+@keyframes pulse {
+  0% { opacity: 0.3; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(1.02); }
+  100% { opacity: 0.3; transform: scale(1); }
+}
+
+.banned-content {
+  position: relative;
+  z-index: 10;
+  max-width: 500px;
+  width: 100%;
+  padding: 2rem;
+  background: rgba(30, 39, 46, 0.8);
+  backdrop-filter: blur(10px);
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.banned-icon {
+  font-size: 4rem;
+  margin-bottom: 1.5rem;
+  color: var(--danger);
+  animation: shake 1.5s ease infinite;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  20% { transform: translateY(-5px) rotate(-3deg); }
+  40% { transform: translateY(5px) rotate(3deg); }
+  60% { transform: translateY(-3px) rotate(-2deg); }
+  80% { transform: translateY(3px) rotate(2deg); }
+}
+
+.banned-title {
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  color: var(--danger-light);
+}
+
+.banned-message {
+  font-size: 1rem;
+  color: var(--light-gray);
+  margin-bottom: 2rem;
+  line-height: 1.6;
+}
+
+.banned-contact {
+  background: rgba(255, 118, 117, 0.1);
+  border-left: 3px solid var(--danger);
+  padding: 1rem;
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.banned-contact a {
+  color: var(--secondary-light);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+/* باقي المكونات... */
 .tabs-container {
   display: flex;
   background: rgba(44, 62, 80, 0.5);
@@ -150,7 +260,6 @@ img {
   color: white;
 }
 
-/* المنتجات */
 .products-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
@@ -163,11 +272,6 @@ img {
   border-radius: var(--radius-md);
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.05);
-  transition: transform 0.2s ease;
-}
-
-.product-card:active {
-  transform: scale(0.98);
 }
 
 .product-image-container {
@@ -217,7 +321,6 @@ img {
   color: var(--secondary-light);
 }
 
-/* الوسطاء */
 .brokers-list {
   display: flex;
   flex-direction: column;
@@ -300,116 +403,8 @@ img {
   font-weight: 600;
   cursor: pointer;
   width: 100%;
-  transition: all 0.2s ease;
 }
 
-.contact-broker-button:active {
-  transform: scale(0.98);
-}
-
-/* صفحة الحظر */
-.banned-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100vh;
-  padding: 2rem;
-  text-align: center;
-  background: var(--darker);
-}
-
-.banned-icon {
-  font-size: 3rem;
-  margin-bottom: 1.5rem;
-  color: var(--danger);
-}
-
-.banned-title {
-  font-size: 1.8rem;
-  color: var(--light);
-  margin-bottom: 1rem;
-}
-
-.banned-message {
-  font-size: 1rem;
-  color: var(--light-gray);
-  opacity: 0.9;
-}
-
-/* نافذة الحظر */
-.ban-modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.8);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-}
-
-.ban-modal {
-  background: linear-gradient(135deg, var(--darker) 0%, var(--dark) 100%);
-  padding: 2rem;
-  border-radius: var(--radius-lg);
-  width: 90%;
-  max-width: 400px;
-  text-align: center;
-  border: 1px solid var(--danger);
-  box-shadow: 0 5px 20px rgba(255, 118, 117, 0.2);
-}
-
-.ban-modal-header {
-  margin-bottom: 1.5rem;
-}
-
-.ban-modal-icon {
-  font-size: 3.5rem;
-  color: var(--danger);
-  margin-bottom: 1rem;
-}
-
-.ban-modal-title {
-  font-size: 1.5rem;
-  color: var(--danger-light);
-  margin-bottom: 0.5rem;
-}
-
-.ban-modal-reason {
-  font-size: 1rem;
-  color: var(--light-gray);
-  margin-bottom: 1.5rem;
-  line-height: 1.5;
-}
-
-.ban-modal-admin {
-  font-size: 0.9rem;
-  color: var(--secondary);
-  margin-bottom: 1.5rem;
-  font-weight: 500;
-}
-
-.ban-modal-button {
-  background: var(--primary);
-  color: white;
-  border: none;
-  padding: 0.8rem 1.5rem;
-  border-radius: var(--radius-md);
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  width: 100%;
-  transition: all 0.2s ease;
-}
-
-.ban-modal-button:active {
-  transform: scale(0.98);
-}
-
-/* صفحة الخطأ */
 .error-container {
   display: flex;
   flex-direction: column;
@@ -444,7 +439,6 @@ img {
   cursor: pointer;
 }
 
-/* صفحة التحميل */
 .loading-container {
   display: flex;
   flex-direction: column;
@@ -473,7 +467,6 @@ img {
   color: var(--secondary);
 }
 
-/* التذييل */
 .footer {
   text-align: center;
   margin-top: 2rem;
@@ -486,30 +479,16 @@ img {
   color: var(--secondary);
 }
 
-/* التكيف مع الشاشات الصغيرة */
 @media (max-width: 480px) {
   .products-grid {
     grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
   }
   
-  .user-avatar, .broker-avatar {
-    width: 45px;
-    height: 45px;
-  }
-  
-  .user-name {
-    font-size: 1rem;
-  }
-  
-  .balance-amount {
-    font-size: 1.5rem;
-  }
-  
-  .ban-modal {
+  .banned-content {
     padding: 1.5rem;
   }
   
-  .ban-modal-title {
-    font-size: 1.3rem;
+  .banned-title {
+    font-size: 1.5rem;
   }
 }
