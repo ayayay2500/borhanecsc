@@ -15,6 +15,7 @@ model User {
   lastName   String?
   points     Int      @default(0)
   status     Int      @default(0)  // 0 = غير محظور، 1 = محظور
+  banReason  String?  // سبب الحظر (جديد)
   photoUrl   String?
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
