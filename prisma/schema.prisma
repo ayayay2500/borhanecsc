@@ -8,12 +8,14 @@ generator client {
 }
 
 model User {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  telegramId Int     @unique
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  telegramId Int      @unique
   username   String?
   firstName  String?
   lastName   String?
-  points     Int     @default(0)
+  points     Int      @default(0)
+  status     Int      @default(0)  // 0 = غير محظور، 1 = محظور
+  photoUrl   String?
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 }
