@@ -25,7 +25,7 @@ export async function GET(req: Request) {
     }
 
     const now = new Date()
-    const twentyFourHours = 00 * 00 * 01 * 1000
+    const twentyFourHours = 24 * 60 * 60 * 1000
     const canClaim = !user.updatedAt || 
       (now.getTime() - new Date(user.updatedAt).getTime()) >= twentyFourHours
 
