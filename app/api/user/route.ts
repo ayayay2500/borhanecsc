@@ -13,13 +13,25 @@ export async function POST(req: NextRequest) {
             where: { telegramId: userData.id }
         })
 
+        // التحقق من الحظر إذا كان المستخدم موجوداً
+        if (user?.status === 1) {
+            return NextResponse.json(
+                { 
+                    error: 'Your account is banned',
+                    banned: true
+                },
+                { status: 403 }
+            )
+        }
+
         if (!user) {
             user = await prisma.user.create({
                 data: {
                     telegramId: userData.id,
                     username: userData.username || '',
                     firstName: userData.first_name || '',
-                    lastName: userData.last_name || ''
+                    lastName: userData.last_name || '',
+                    status: 0 // قيمة افتراضية غير محظور
                 }
             })
         }
