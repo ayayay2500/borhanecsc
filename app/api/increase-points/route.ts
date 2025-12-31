@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
-const MAX_ADS = 7;
+const MAX_ADS = 3;
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url)
