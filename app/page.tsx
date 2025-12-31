@@ -22,11 +22,7 @@ type User = {
 }
 
 type Product = {
-  id: number
-  title: string
-  price: number
-  imageUrl: string
-  category: string
+  id: number; title: string; price: number; imageUrl: string; category: string;
 }
 
 export default function Home() {
@@ -53,7 +49,7 @@ export default function Home() {
 
   const fetchUserData = useCallback(async (tgUser: any) => {
     try {
-      const res = await fetch('/api/user', {
+      const res = await fetch('/api/increase-points', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(tgUser),
@@ -62,13 +58,7 @@ export default function Home() {
       
       if (data.status === 1) {
         setIsBanned(true)
-        setUser({ 
-          telegramId: tgUser.id, 
-          firstName: tgUser.first_name, 
-          points: data.points || 0, 
-          status: 1, 
-          banReason: data.banReason 
-        })
+        setUser({ telegramId: tgUser.id, firstName: tgUser.first_name, points: data.points || 0, status: 1, banReason: data.banReason })
         setLoading(false)
         return
       }
@@ -105,25 +95,17 @@ export default function Home() {
 
     if (user.points < product.price) {
       // @ts-ignore
-      tg.showPopup({
-        title: 'رصيد غير كافٍ',
-        message: `سعر المنتج ${product.price} XP ورصيدك ${user.points} XP.`,
-        buttons: [{ type: 'ok' }]
-      })
+      tg.showPopup({ title: 'رصيد غير كافٍ', message: `سعر المنتج ${product.price} XP ورصيدك ${user.points} XP.`, buttons: [{ type: 'ok' }] })
       return
     }
 
     tg.showConfirm(`هل أنت متأكد من شراء "${product.title}" مقابل ${product.price} XP؟`, async (confirmed) => {
       if (confirmed) {
         try {
-          const res = await fetch('/api/user', {
+          const res = await fetch('/api/increase-points', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-              telegramId: user.telegramId, 
-              action: 'purchase_product', 
-              price: product.price 
-            }),
+            body: JSON.stringify({ telegramId: user.telegramId, action: 'purchase_product', price: product.price }),
           })
           const data = await res.json()
 
@@ -134,10 +116,10 @@ export default function Home() {
               tg.openTelegramLink(`https://t.me/Kharwaydo?text=${encodeURIComponent(msg)}`)
             })
           } else {
-            tg.showAlert('❌ فشل الخصم: ' + (data.message || 'حدث خطأ'))
+            tg.showAlert('❌ فشل الخصم: ' + (data.message || 'خطأ غير معروف'))
           }
         } catch (e) {
-          tg.showAlert('❌ خطأ في الشبكة')
+          tg.showAlert('❌ حدث خطأ أثناء عملية الاتصال')
         }
       }
     })
@@ -145,7 +127,6 @@ export default function Home() {
 
   if (isBanned) return <div className="banned-container">🚫 أنت محظور: {user?.banReason}</div>
   if (loading) return <div className="loading-container"><div className="loading-spinner"></div></div>
-  if (error) return <div className="error-container">⚠️ {error}</div>
 
   return (
     <div className="main-container">
@@ -156,17 +137,14 @@ export default function Home() {
           <p className="user-username">@{user?.username || 'user'}</p>
         </div>
       </div>
-
       <div className="balance-card">
         <div className="balance-label">رصيدك الحالي</div>
         <div className="balance-amount">{user?.points.toLocaleString()} <span>XP</span></div>
       </div>
-
       <div className="tabs-container">
         <button className={`tab-button ${activeTab === 'products' ? 'active' : ''}`} onClick={() => setActiveTab('products')}>المنتجات</button>
         <button className={`tab-button ${activeTab === 'tasks' ? 'active' : ''}`} onClick={() => setActiveTab('tasks')}>الهدية اليومية</button>
       </div>
-
       {activeTab === 'products' ? (
         <div className="products-grid">
           {products.map(product => (
@@ -175,16 +153,11 @@ export default function Home() {
                 <img src={product.imageUrl} alt={product.title} className="product-image" />
                 <div className="product-badge">{product.category}</div>
               </div>
-              <div className="product-info">
-                <h3 className="product-title">{product.title}</h3>
-                <div className="product-price">{product.price} XP</div>
-              </div>
+              <div className="product-info"><h3 className="product-title">{product.title}</h3><div className="product-price">{product.price} XP</div></div>
             </div>
           ))}
         </div>
-      ) : (
-        <Page1 />
-      )}
+      ) : ( <Page1 /> )}
       <div className="footer"><p>Developed By <span>Borhane San</span></p></div>
     </div>
   )
