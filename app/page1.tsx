@@ -1,154 +1,115 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { WebApp } from '@twa-dev/types'
 import './task.css'
-
-declare global {
-  interface Window {
-    Telegram?: {
-      WebApp: WebApp
-    }
-  }
-}
 
 export default function DailyReward() {
   const [user, setUser] = useState<any>(null)
-  const [error, setError] = useState<string | null>(null)
-  const [notification, setNotification] = useState('')
-  const [canClaim, setCanClaim] = useState(false)
+  const [adsCount, setAdsCount] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
-  const [timeLeft, setTimeLeft] = useState('')
+  const [notification, setNotification] = useState('')
+  const [error, setError] = useState<string | null>(null)
+  const MAX_ADS = 7
 
   useEffect(() => {
     if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
       const tg = window.Telegram.WebApp
       tg.ready()
-      tg.expand()
-
       const initDataUnsafe = tg.initDataUnsafe || {}
       
       if (initDataUnsafe.user) {
         setUser(initDataUnsafe.user)
-        checkClaimStatus(initDataUnsafe.user.id)
+        fetchStatus(initDataUnsafe.user.id)
       } else {
-        setError('يجب تسجيل الدخول أولاً')
+        setError('يرجى فتح التطبيق من تليجرام')
         setIsLoading(false)
       }
-    } else {
-      setError('الرجاء فتح البوت عبر Telegram')
-      setIsLoading(false)
     }
   }, [])
 
-  const checkClaimStatus = async (telegramId: number) => {
+  const fetchStatus = async (telegramId: number) => {
     try {
       const res = await fetch(`/api/increase-points?telegramId=${telegramId}`)
       const data = await res.json()
-      
       if (data.success) {
-        setCanClaim(data.canClaim)
-        if (!data.canClaim && data.nextClaimTime) {
-          startCountdown(data.nextClaimTime)
-        }
-      } else {
-        setError(data.message || 'فشل التحقق من الجائزة')
-        if (data.nextClaimTime) {
-          startCountdown(data.nextClaimTime)
-        }
+        setAdsCount(data.count)
       }
     } catch (err) {
-      setError('خطأ في الاتصال بالخادم')
+      setError('فشل الاتصال بالسيرفر')
     } finally {
       setIsLoading(false)
     }
   }
 
-  const startCountdown = (endTime: string) => {
-    const updateTimer = () => {
-      const now = new Date()
-      const end = new Date(endTime)
-      const diff = end.getTime() - now.getTime()
-
-      if (diff <= 0) {
-        setCanClaim(true)
-        setTimeLeft('')
-        return
-      }
-
-      const hours = Math.floor(diff / (1000 * 60 * 60))
-      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
-      const seconds = Math.floor((diff % (1000 * 60)) / 1000)
-
-      setTimeLeft(`${hours} س ${minutes} د ${seconds} ث`)
-      setTimeout(updateTimer, 1000)
-    }
-
-    updateTimer()
-  }
-
-  const handleClaimReward = async () => {
-    if (!user || !canClaim || isLoading) return
+  const handleWatchAd = async () => {
+    if (!user || adsCount >= MAX_ADS || isLoading) return
 
     setIsLoading(true)
     
     try {
+      // هنا يمكنك استدعاء كود شركة الإعلانات فعلياً
+      // بعد نجاح الإعلان، نقوم بتحديث النقاط:
       const res = await fetch('/api/increase-points', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ telegramId: user.id }),
       })
       
       const data = await res.json()
       
       if (data.success) {
-        setNotification('🎉 بصحتك تحصلت على الهدية!')
-        setCanClaim(false)
-        startCountdown(data.nextClaimTime)
+        setAdsCount(data.newCount)
+        setNotification('🎉 أحسنت! حصلت على نقطة إضافية')
+        setTimeout(() => setNotification(''), 3000)
       } else {
-        setError(data.message || 'فشل في المطالبة')
+        setError(data.message)
       }
     } catch (err) {
-      setError('حدث خطأ غير متوقع')
+      setError('حدث خطأ أثناء التحديث')
     } finally {
       setIsLoading(false)
     }
   }
 
-  if (error) {
-    return (
-      <div className="error-container">
-        <p>{error}</p>
-      </div>
-    )
-  }
+  if (error) return <div className="error-container"><p>{error}</p></div>
 
   return (
     <div className="reward-container">
-      <h1 className="reward-title">🎁 المكافأة اليومية</h1>
+      <h1 className="reward-title">🎁 هدايا يومية</h1>
       
       <div className="reward-card">
-        <p>احصل على نقطة مجانية كل 24 ساعة</p>
-        <small>اضغط لتحصل على جائزتك اليومية</small>
+        <p>شاهد إعلانات لربح نقاط XP</p>
+        <div className="ads-counter-info">
+          <span>التقدم اليومي:</span>
+          <span>{adsCount} / {MAX_ADS}</span>
+        </div>
+        <div className="progress-bar-container">
+          <div 
+            className="progress-bar-fill" 
+            style={{ width: `${(adsCount / MAX_ADS) * 100}%` }}
+          ></div>
+        </div>
       </div>
 
-      {notification && (
-        <div className="notification">
-          {notification}
-        </div>
-      )}
+      {notification && <div className="notification-toast">{notification}</div>}
 
       <button
-        onClick={handleClaimReward}
-        disabled={!canClaim || isLoading}
-        className={`claim-btn ${!canClaim ? 'disabled' : ''}`}
+        onClick={handleWatchAd}
+        disabled={adsCount >= MAX_ADS || isLoading}
+        className={`claim-btn ${adsCount >= MAX_ADS ? 'disabled' : ''}`}
       >
-        {isLoading ? 'جاري التحميل...' : 
-         canClaim ? '🎁 احصل على جائزتك' : 
-         `الوقت المتبقي: ${timeLeft}`}
+        {isLoading ? (
+          <div className="spinner-small"></div>
+        ) : adsCount >= MAX_ADS ? (
+          '✅ اكتملت إعلانات اليوم'
+        ) : (
+          '📺 شاهد إعلان لتربح'
+        )}
       </button>
+
+      {adsCount >= MAX_ADS && (
+        <p className="reset-info">يتجدد العداد تلقائياً كل يوم</p>
+      )}
     </div>
   )
 }
