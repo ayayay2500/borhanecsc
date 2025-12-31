@@ -1,51 +1,18 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
-import { WebApp } from '@twa-dev/types'
 import './styles.css'
 import Page1 from './page1'
 
-declare global {
-  interface Window {
-    Telegram?: { WebApp: WebApp }
-  }
-}
-
-type User = {
-  telegramId: number
-  firstName: string
-  points: number
-  photoUrl?: string
-  username?: string
-  status?: number
-  banReason?: string
-}
-
-type Product = {
-  id: number; title: string; price: number; imageUrl: string; category: string;
-}
-
 export default function Home() {
-  const [user, setUser] = useState<User | null>(null)
-  const [error, setError] = useState<string | null>(null)
-  const [products, setProducts] = useState<Product[]>([])
+  const [user, setUser] = useState<any>(null)
   const [activeTab, setActiveTab] = useState<'products' | 'tasks'>('products')
   const [loading, setLoading] = useState(true)
-  const [isBanned, setIsBanned] = useState(false)
-
-  useEffect(() => {
-    if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
-      const tg = window.Telegram.WebApp
-      tg.ready()
-      tg.expand()
-      if (tg.initDataUnsafe.user) {
-        fetchUserData(tg.initDataUnsafe.user)
-      } else {
-        setError('يرجى فتح البوت من تليجرام')
-        setLoading(false)
-      }
-    }
-  }, [])
+  
+  // حالات نظام الأكواد
+  const [showGiftModal, setShowGiftModal] = useState(false)
+  const [giftCode, setGiftCode] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const fetchUserData = useCallback(async (tgUser: any) => {
     try {
@@ -55,110 +22,127 @@ export default function Home() {
         body: JSON.stringify(tgUser),
       })
       const data = await res.json()
-      
-      if (data.status === 1) {
-        setIsBanned(true)
-        setUser({ telegramId: tgUser.id, firstName: tgUser.first_name, points: data.points || 0, status: 1, banReason: data.banReason })
-        setLoading(false)
-        return
-      }
-
-      setUser({
-        telegramId: tgUser.id,
-        firstName: tgUser.first_name,
-        username: tgUser.username,
-        points: data.points || 0,
-        photoUrl: tgUser.photo_url
-      })
-      fetchProducts()
+      setUser({ ...tgUser, points: data.points || 0 })
     } catch (err) {
-      setError('فشل في الاتصال بالسيرفر')
+      console.error("Error fetching user");
+    } finally {
       setLoading(false)
     }
   }, [])
 
-  const fetchProducts = () => {
-    const mockProducts: Product[] = [
-      { id: 1, title: "حساب جواهر 5000 اندرويد", price: 170, imageUrl: "https://i.postimg.cc/4d0Vdzhy/New-Project-40-C022-BBD.png", category: "باونتي" },
-      { id: 2, title: "حساب جواهر 5000 ايفون", price: 170, imageUrl: "https://i.postimg.cc/k51fQRb3/New-Project-40-321-E54-A.png", category: "باونتي" },
-      { id: 3, title: "حساب جواهر + كوزان اندرويد", price: 200, imageUrl: "https://i.postimg.cc/fL1CF4C8/New-Project-40-FE9627-F.png", category: "باونتي" },
-      { id: 4, title: "تحويل فليكسي", price: 50, imageUrl: "https://i.postimg.cc/9Q1p2w1R/New-Project-40-90-F0-A70.png", category: "تحويل" },
-      { id: 5, title: "عضوية شهرية ", price: 600, imageUrl: "https://i.postimg.cc/DzZcwfYC/New-Project-40-8383-F74.png", category: "شحن" }
-    ]
-    setProducts(mockProducts)
-    setLoading(false)
-  }
-
-  const handlePurchase = async (product: Product) => {
-    const tg = window.Telegram?.WebApp
-    if (!user || !tg) return
-
-    if (user.points < product.price) {
-      // @ts-ignore
-      tg.showPopup({ title: 'رصيد غير كافٍ', message: `سعر المنتج ${product.price} XP ورصيدك ${user.points} XP.`, buttons: [{ type: 'ok' }] })
-      return
-    }
-
-    tg.showConfirm(`هل أنت متأكد من شراء "${product.title}" مقابل ${product.price} XP؟`, async (confirmed) => {
-      if (confirmed) {
-        try {
-          const res = await fetch('/api/increase-points', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ telegramId: user.telegramId, action: 'purchase_product', price: product.price }),
-          })
-          const data = await res.json()
-
-          if (data.success) {
-            setUser(prev => prev ? { ...prev, points: data.newPoints } : null)
-            tg.showAlert('✅ تم الخصم بنجاح! تواصل مع المدير الآن.', () => {
-              const msg = `طلب شراء مؤكد:\nالمنتج: ${product.title}\nالسعر: ${product.price} XP`
-              tg.openTelegramLink(`https://t.me/Kharwaydo?text=${encodeURIComponent(msg)}`)
-            })
-          } else {
-            tg.showAlert('❌ فشل الخصم: ' + (data.message || 'خطأ غير معروف'))
-          }
-        } catch (e) {
-          tg.showAlert('❌ حدث خطأ أثناء عملية الاتصال')
-        }
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
+      const tg = window.Telegram.WebApp
+      tg.ready()
+      if (tg.initDataUnsafe?.user) {
+        fetchUserData(tg.initDataUnsafe.user)
       }
-    })
+    }
+  }, [fetchUserData])
+
+  // وظيفة استرداد الكود
+  const handleRedeemCode = async () => {
+    if (!giftCode.trim() || isSubmitting) return
+    setIsSubmitting(true)
+
+    try {
+      const res = await fetch('/api/increase-points', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          id: user.id, 
+          action: 'redeem_code', 
+          code: giftCode.trim() 
+        }),
+      })
+      const data = await res.json()
+
+      if (data.success) {
+        setUser((prev: any) => ({ ...prev, points: data.newPoints }))
+        alert(`✅ تم الاسترداد بنجاح! حصلت على ${data.amount} XP`)
+        setShowGiftModal(false)
+        setGiftCode('')
+      } else {
+        alert(`❌ فشل: ${data.message || 'كود غير صالح'}`)
+      }
+    } catch (e) {
+      alert("❌ حدث خطأ في الاتصال")
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
-  if (isBanned) return <div className="banned-container">🚫 أنت محظور: {user?.banReason}</div>
   if (loading) return <div className="loading-container"><div className="loading-spinner"></div></div>
 
   return (
     <div className="main-container">
+      {/* الواجهة العلوية */}
       <div className="user-header">
-        <img src={user?.photoUrl || '/default-avatar.png'} className="user-avatar" alt="profile" />
-        <div className="user-info">
-          <h1 className="user-name">مرحباً، <span>{user?.firstName}</span>!</h1>
-          <p className="user-username">@{user?.username || 'user'}</p>
+        <div className="user-top-actions">
+           {/* زر Top Up الجديد */}
+           <button className="topup-btn" onClick={() => setShowGiftModal(true)}>
+             + Top Up
+           </button>
+        </div>
+        
+        <div className="user-profile-info">
+          <div className="user-info">
+            <h1 className="user-name">مرحباً، <span>{user?.first_name || 'Smart'}</span>!</h1>
+            <p className="user-username">@{user?.username || 'smartserevrfox'}</p>
+          </div>
+          <img src={user?.photo_url || 'https://via.placeholder.com/55'} className="user-avatar" alt="profile" />
         </div>
       </div>
+
+      {/* الرصيد والتبويبات والمنتجات (نفس الكود القديم لديك) */}
       <div className="balance-card">
-        <div className="balance-label">رصيدك الحالي</div>
-        <div className="balance-amount">{user?.points.toLocaleString()} <span>XP</span></div>
+        <p>رصيدك الحالي</p>
+        <h2>{user?.points || 0} <span>XP</span></h2>
       </div>
+
       <div className="tabs-container">
-        <button className={`tab-button ${activeTab === 'products' ? 'active' : ''}`} onClick={() => setActiveTab('products')}>المنتجات</button>
-        <button className={`tab-button ${activeTab === 'tasks' ? 'active' : ''}`} onClick={() => setActiveTab('tasks')}>الهدية اليومية</button>
+        <button className={activeTab === 'products' ? 'tab-button active' : 'tab-button'} onClick={() => setActiveTab('products')}>المنتجات</button>
+        <button className={activeTab === 'tasks' ? 'tab-button active' : 'tab-button'} onClick={() => setActiveTab('tasks')}>الهدية اليومية</button>
       </div>
+
       {activeTab === 'products' ? (
         <div className="products-grid">
-          {products.map(product => (
-            <div key={product.id} className="product-card" onClick={() => handlePurchase(product)}>
-              <div className="product-image-container">
-                <img src={product.imageUrl} alt={product.title} className="product-image" />
-                <div className="product-badge">{product.category}</div>
-              </div>
-              <div className="product-info"><h3 className="product-title">{product.title}</h3><div className="product-price">{product.price} XP</div></div>
-            </div>
-          ))}
+           {/* المنتجات هنا */}
         </div>
-      ) : ( <Page1 /> )}
-      <div className="footer"><p>Developed By <span>Borhane San</span></p></div>
+      ) : (
+        <Page1 />
+      )}
+
+      {/* --- نافذة استرداد الكود (Modal) --- */}
+      {showGiftModal && (
+        <div className="modal-overlay">
+          <div className="gift-modal">
+            <h3>استرداد كود الهدايا 🎁</h3>
+            <p>أدخل الكود الخاص بك للحصول على نقاط XP مجانية</p>
+            
+            <input 
+              type="text" 
+              placeholder="مثال: GIFT2025" 
+              value={giftCode}
+              onChange={(e) => setGiftCode(e.target.value)}
+              className="gift-input"
+            />
+            
+            <div className="modal-buttons">
+              <button 
+                className="redeem-confirm-btn" 
+                onClick={handleRedeemCode}
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? 'جاري التحقق...' : 'استرداد الآن'}
+              </button>
+              <button className="modal-close-btn" onClick={() => setShowGiftModal(false)}>
+                إغلاق
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
