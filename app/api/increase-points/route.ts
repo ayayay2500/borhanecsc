@@ -37,35 +37,34 @@ export async function POST(req: Request) {
     if (user.status === 1) return NextResponse.json({ error: 'محظور', status: 1 }, { status: 403 })
 
     if (body.action === 'redeem_code') {
-      const inputCode = String(body.code).trim().toUpperCase();
+      // 1. تنظيف شامل للمدخلات من أي مسافات أو رموز خفية
+      const inputCode = String(body.code).replace(/\s+/g, '').toUpperCase();
 
-      // جلب جميع الأكواد المتاحة في القاعدة التي يتصل بها التطبيق حالياً
+      // 2. جلب الأكواد وتنظيفها برمجياً قبل المقارنة
       const allCodes = await prisma.giftCode.findMany();
       
-      // إذا كانت القاعدة فارغة تماماً
       if (allCodes.length === 0) {
-        return NextResponse.json({ success: false, message: 'قاعدة الأكواد فارغة تماماً في هذا السيرفر' });
+        return NextResponse.json({ success: false, message: 'قاعدة الأكواد فارغة تماماً' });
       }
 
-      // البحث عن الكود مع تنظيف شامل
-      const gift = allCodes.find(g => g.code.replace(/\s+/g, '') === inputCode);
+      // البحث عن كود يطابق المدخل بعد حذف كل المسافات من الطرفين
+      const gift = allCodes.find(g => g.code.replace(/\s+/g, '').toUpperCase() === inputCode);
 
       if (!gift) {
-        // رسالة تخبرك بالأكواد الموجودة فعلياً (للتصحيح)
-        const available = allCodes.map(c => c.code).join(', ');
-        return NextResponse.json({ 
-          success: false, 
-          message: `الكود ${inputCode} غير موجود. المتاح هو: [${available}]` 
-        });
+        return NextResponse.json({ success: false, message: 'كود غير صحيح' });
       }
 
-      if (gift.currentUses >= gift.maxUses) return NextResponse.json({ success: false, message: 'انتهت الكمية' });
+      if (gift.currentUses >= gift.maxUses) {
+        return NextResponse.json({ success: false, message: 'انتهت صلاحية الكود' });
+      }
 
       const alreadyUsed = await prisma.usedCode.findFirst({
         where: { userId: telegramId, codeId: gift.id }
       });
 
-      if (alreadyUsed) return NextResponse.json({ success: false, message: 'استعملته مسبقاً' });
+      if (alreadyUsed) {
+        return NextResponse.json({ success: false, message: 'استخدمت الكود مسبقاً' });
+      }
 
       try {
         const result = await prisma.$transaction([
@@ -75,8 +74,8 @@ export async function POST(req: Request) {
         ]);
 
         return NextResponse.json({ success: true, newPoints: result[0].points, amount: gift.points });
-      } catch (e) {
-        return NextResponse.json({ success: false, message: 'خطأ أثناء التحديث' });
+      } catch (err) {
+        return NextResponse.json({ success: false, message: 'خطأ في العملية' });
       }
     }
 
