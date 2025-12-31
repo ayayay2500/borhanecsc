@@ -9,7 +9,7 @@ export default function DailyReward() {
   const [isLoading, setIsLoading] = useState(true)
   const [notification, setNotification] = useState('')
   const [error, setError] = useState<string | null>(null)
-  const MAX_ADS = 7
+  const MAX_ADS = 3
 
   useEffect(() => {
     if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
