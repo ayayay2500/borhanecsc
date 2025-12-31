@@ -37,24 +37,27 @@ export async function POST(req: Request) {
     if (user.status === 1) return NextResponse.json({ error: 'محظور', status: 1 }, { status: 403 })
 
     if (body.action === 'redeem_code') {
-      // 1. تنظيف شامل للمدخلات من أي مسافات أو رموز خفية
+      // 1. تنظيف كلي للمدخل من المستخدم (حذف أي مسافات حتى المخفية)
       const inputCode = String(body.code).replace(/\s+/g, '').toUpperCase();
 
-      // 2. جلب الأكواد وتنظيفها برمجياً قبل المقارنة
+      // 2. جلب جميع الأكواد من القاعدة
       const allCodes = await prisma.giftCode.findMany();
       
-      if (allCodes.length === 0) {
-        return NextResponse.json({ success: false, message: 'قاعدة الأكواد فارغة تماماً' });
-      }
-
-      // البحث عن كود يطابق المدخل بعد حذف كل المسافات من الطرفين
-      const gift = allCodes.find(g => g.code.replace(/\s+/g, '').toUpperCase() === inputCode);
+      // 3. البحث اليدوي الدقيق مع تنظيف البيانات المخزنة
+      const gift = allCodes.find(g => {
+        const cleanedDbCode = String(g.code).replace(/\s+/g, '').toUpperCase();
+        return cleanedDbCode === inputCode;
+      });
 
       if (!gift) {
-        return NextResponse.json({ success: false, message: 'كود غير صحيح' });
+        return NextResponse.json({ success: false, message: 'كود غير صالح - لم يتم العثور عليه' });
       }
 
-      if (gift.currentUses >= gift.maxUses) {
+      // التحقق من الأرقام (تأكد أنها أرقام وليست نصوص)
+      const max = Number(gift.maxUses);
+      const current = Number(gift.currentUses);
+
+      if (current >= max) {
         return NextResponse.json({ success: false, message: 'انتهت صلاحية الكود' });
       }
 
@@ -68,14 +71,14 @@ export async function POST(req: Request) {
 
       try {
         const result = await prisma.$transaction([
-          prisma.user.update({ where: { telegramId }, data: { points: { increment: gift.points } } }),
+          prisma.user.update({ where: { telegramId }, data: { points: { increment: Number(gift.points) } } }),
           prisma.giftCode.update({ where: { id: gift.id }, data: { currentUses: { increment: 1 } } }),
           prisma.usedCode.create({ data: { userId: telegramId, codeId: gift.id } })
         ]);
 
         return NextResponse.json({ success: true, newPoints: result[0].points, amount: gift.points });
       } catch (err) {
-        return NextResponse.json({ success: false, message: 'خطأ في العملية' });
+        return NextResponse.json({ success: false, message: 'خطأ أثناء تنفيذ العملية' });
       }
     }
 
