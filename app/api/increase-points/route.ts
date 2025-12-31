@@ -1,86 +1,53 @@
-import { NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
-
-const MAX_ADS = 7;
-
-export async function GET(req: Request) {
-  const { searchParams } = new URL(req.url)
-  const telegramId = Number(searchParams.get('telegramId'))
-
-  if (!telegramId) {
-    return NextResponse.json({ error: 'Telegram ID مطلوب' }, { status: 400 })
-  }
-
-  try {
-    const user = await prisma.user.findUnique({ where: { telegramId } })
-
-    if (!user) {
-      return NextResponse.json({ error: 'المستخدم غير موجود' }, { status: 404 })
-    }
-
-    const now = new Date()
-    const lastAdDate = user.lastAdDate ? new Date(user.lastAdDate) : new Date(0)
-    
-    // التحقق هل نحن في يوم جديد (مقارنة اليوم والشهر والسنة)
-    const isNewDay = now.toDateString() !== lastAdDate.toDateString()
-    const currentCount = isNewDay ? 0 : (user.adsCount || 0)
-
-    return NextResponse.json({
-      success: true,
-      canClaim: currentCount < MAX_ADS,
-      count: currentCount,
-      maxAds: MAX_ADS
-    })
-  } catch (error) {
-    console.error('Error:', error)
-    return NextResponse.json({ error: 'خطأ في الخادم' }, { status: 500 })
-  }
-}
-
 export async function POST(req: Request) {
-  const { telegramId } = await req.json()
-
-  if (!telegramId) {
-    return NextResponse.json({ error: 'Telegram ID مطلوب' }, { status: 400 })
-  }
+  const body = await req.json()
+  const telegramId = Number(body.id || body.telegramId)
 
   try {
-    const user = await prisma.user.findUnique({ where: { telegramId: Number(telegramId) } })
-
-    if (!user) {
-      return NextResponse.json({ error: 'المستخدم غير موجود' }, { status: 404 })
-    }
-
-    const now = new Date()
-    const lastAdDate = user.lastAdDate ? new Date(user.lastAdDate) : new Date(0)
-    const isNewDay = now.toDateString() !== lastAdDate.toDateString()
-
-    let currentCount = isNewDay ? 0 : (user.adsCount || 0)
-
-    if (currentCount >= MAX_ADS) {
-      return NextResponse.json({
-        success: false,
-        message: 'لقد استهلكت جميع محاولاتك لليوم (7/7)',
-      })
-    }
-
-    const updatedUser = await prisma.user.update({
-      where: { telegramId: Number(telegramId) },
-      data: {
-        points: { increment: 1 },
-        adsCount: currentCount + 1,
-        lastAdDate: now
+    const user = await prisma.user.upsert({
+      where: { telegramId },
+      update: {
+        username: body.username,
+        firstName: body.first_name || body.firstName,
+        photoUrl: body.photo_url || body.photoUrl,
+      },
+      create: {
+        telegramId,
+        username: body.username,
+        firstName: body.first_name || body.firstName,
+        photoUrl: body.photo_url || body.photoUrl,
+        points: 0,
+        adsCount: 0,
+        status: 0 // التأكد من أنه غير محظور عند الإنشاء
       }
     })
 
-    return NextResponse.json({
-      success: true,
-      points: updatedUser.points,
-      newCount: updatedUser.adsCount,
-      maxAds: MAX_ADS
-    })
-  } catch (error) {
-    console.error('Error:', error)
-    return NextResponse.json({ error: 'خطأ في الخادم' }, { status: 500 })
+    // 🛑 الجزء المسؤول عن الحظر (أضف هذا الشرط هنا)
+    if (user.status === 1) {
+      return NextResponse.json({ 
+        error: 'حسابك محظور', 
+        status: 1, 
+        banReason: user.banReason || 'تم حظر حسابك لمخالفة القوانين' 
+      }, { status: 403 })
+    }
+
+    // إذا كان الطلب قادماً من صفحة الإعلانات لزيادة النقاط
+    if (body.action === 'watch_ad') {
+        const now = new Date()
+        const lastAdDate = user.lastAdDate ? new Date(user.lastAdDate) : new Date(0)
+        const isNewDay = now.toDateString() !== lastAdDate.toDateString()
+        let currentCount = isNewDay ? 0 : (user.adsCount || 0)
+
+        if (currentCount >= 7) return NextResponse.json({ success: false, message: 'انتهت محاولات اليوم' })
+
+        const updated = await prisma.user.update({
+            where: { telegramId },
+            data: { points: { increment: 1 }, adsCount: currentCount + 1, lastAdDate: now }
+        })
+        return NextResponse.json({ success: true, newCount: updated.adsCount, points: updated.points })
+    }
+
+    return NextResponse.json(user)
+  } catch (e) { 
+    return NextResponse.json({ error: 'خطأ في السيرفر' }, { status: 500 }) 
   }
 }
