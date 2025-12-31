@@ -104,10 +104,11 @@ export default function Home() {
     if (!user || !tg) return
 
     if (user.points < product.price) {
+      // @ts-ignore
       tg.showPopup({
         title: 'رصيد غير كافٍ',
-        message: `سعر المنتج ${product.price} XP ورصيدك ${user.points} XP. شاهد الإعلانات لزيادة رصيدك!`,
-        buttons: [{ type: 'ok' }] // تم إزالة 'text' لإصلاح خطأ TypeScript
+        message: `سعر المنتج ${product.price} XP ورصيدك ${user.points} XP.`,
+        buttons: [{ type: 'ok' }]
       })
       return
     }
@@ -119,7 +120,7 @@ export default function Home() {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ 
-              telegramId: user.telegramId, // نستخدم telegramId ليتوافق مع السيرفر
+              telegramId: user.telegramId, 
               action: 'purchase_product', 
               price: product.price 
             }),
@@ -133,29 +134,17 @@ export default function Home() {
               tg.openTelegramLink(`https://t.me/Kharwaydo?text=${encodeURIComponent(msg)}`)
             })
           } else {
-            tg.showAlert('❌ فشل الخصم: ' + (data.message || data.error))
+            tg.showAlert('❌ فشل الخصم: ' + (data.message || 'حدث خطأ'))
           }
         } catch (e) {
-          tg.showAlert('❌ حدث خطأ في الشبكة')
+          tg.showAlert('❌ خطأ في الشبكة')
         }
       }
     })
   }
 
-  if (isBanned) {
-    return (
-      <div className="banned-container">
-        <div className="banned-content">
-          <div className="banned-icon">🚫</div>
-          <h1 className="banned-title">أنت محظور</h1>
-          <p className="banned-message">{user?.banReason || 'تم حظر حسابك'}</p>
-        </div>
-      </div>
-    )
-  }
-
-  if (loading) return <div className="loading-container"><div className="loading-spinner"></div><p className="loading-text">جاري التحميل...</p></div>
-
+  if (isBanned) return <div className="banned-container">🚫 أنت محظور: {user?.banReason}</div>
+  if (loading) return <div className="loading-container"><div className="loading-spinner"></div></div>
   if (error) return <div className="error-container">⚠️ {error}</div>
 
   return (
@@ -196,7 +185,6 @@ export default function Home() {
       ) : (
         <Page1 />
       )}
-
       <div className="footer"><p>Developed By <span>Borhane San</span></p></div>
     </div>
   )
