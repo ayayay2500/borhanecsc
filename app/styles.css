@@ -1,17 +1,199 @@
-/* زر Top Up */
+/* الألوان والأساسيات */
+:root {
+  --primary-color: #6c5ce7;
+  --secondary-color: #a29bfe;
+  --bg-dark: #0f172a;
+  --card-bg: #1e293b;
+  --text-white: #ffffff;
+  --accent-green: #00b894;
+  --accent-red: #ff7675;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+  background-color: var(--bg-dark);
+  color: var(--text-white);
+  direction: rtl;
+}
+
+.main-container {
+  padding: 20px;
+  max-width: 500px;
+  margin: 0 auto;
+  padding-bottom: 80px;
+}
+
+/* الهيدر وزر التوب أب */
+.user-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+  background: var(--card-bg);
+  padding: 15px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.user-profile-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.user-avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  border: 2px solid var(--primary-color);
+  object-fit: cover;
+}
+
+.user-name {
+  font-size: 1.1rem;
+}
+
+.user-name span {
+  color: var(--secondary-color);
+}
+
+.user-username {
+  font-size: 0.8rem;
+  opacity: 0.6;
+}
+
 .topup-btn {
-  background: linear-gradient(135deg, #00b894, #00cec9);
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
   color: white;
   border: none;
   padding: 8px 16px;
-  border-radius: 20px;
+  border-radius: 12px;
   font-weight: bold;
   font-size: 0.8rem;
-  box-shadow: 0 4px 10px rgba(0, 184, 148, 0.3);
   cursor: pointer;
+  box-shadow: 0 4px 15px rgba(108, 92, 231, 0.3);
+  transition: transform 0.2s;
 }
 
-/* النافذة المنبثقة */
+.topup-btn:active {
+  transform: scale(0.95);
+}
+
+/* بطاقة الرصيد */
+.balance-card {
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  padding: 25px;
+  border-radius: 24px;
+  text-align: center;
+  margin-bottom: 25px;
+  border: 1px solid rgba(108, 92, 231, 0.2);
+}
+
+.balance-label {
+  font-size: 0.9rem;
+  opacity: 0.7;
+  margin-bottom: 10px;
+}
+
+.balance-amount {
+  font-size: 2.5rem;
+  font-weight: 900;
+}
+
+.balance-amount span {
+  font-size: 1rem;
+  color: var(--secondary-color);
+}
+
+/* التبويبات */
+.tabs-container {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 5px;
+  border-radius: 15px;
+}
+
+.tab-button {
+  flex: 1;
+  padding: 12px;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.tab-button.active {
+  background: var(--primary-color);
+  box-shadow: 0 4px 10px rgba(108, 92, 231, 0.2);
+}
+
+/* شبكة المنتجات */
+.products-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+}
+
+.product-card {
+  background: var(--card-bg);
+  border-radius: 20px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: 0.3s;
+}
+
+.product-image-container {
+  position: relative;
+  width: 100%;
+  height: 120px;
+}
+
+.product-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.product-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: var(--primary-color);
+  font-size: 0.65rem;
+  padding: 3px 8px;
+  border-radius: 8px;
+  font-weight: bold;
+}
+
+.product-info {
+  padding: 12px;
+}
+
+.product-title {
+  font-size: 0.85rem;
+  margin-bottom: 8px;
+  height: 34px;
+  overflow: hidden;
+}
+
+.product-price {
+  color: var(--secondary-color);
+  font-weight: bold;
+  font-size: 0.9rem;
+}
+
+/* نافذة استرداد الكود (Modal) */
 .modal-overlay {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
@@ -19,54 +201,116 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
-  backdrop-filter: blur(5px);
+  z-index: 9999;
+  backdrop-filter: blur(8px);
 }
 
 .gift-modal {
-  background: #2d3436;
+  background: #1e293b;
   width: 85%;
-  max-width: 350px;
-  padding: 25px;
-  border-radius: 20px;
+  max-width: 340px;
+  padding: 30px;
+  border-radius: 28px;
   text-align: center;
   border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.4);
 }
 
-.gift-modal h3 { margin-bottom: 10px; color: #f1c40f; }
-.gift-modal p { font-size: 0.85rem; opacity: 0.8; margin-bottom: 20px; }
+.modal-header h3 {
+  color: var(--secondary-color);
+  margin-bottom: 8px;
+  font-size: 1.3rem;
+}
 
-.gift-input {
-  width: 100%;
-  padding: 12px;
-  border-radius: 10px;
-  border: 1px solid #444;
-  background: #1e272e;
-  color: white;
-  text-align: center;
-  font-weight: bold;
-  letter-spacing: 2px;
+.modal-header p {
+  font-size: 0.85rem;
+  opacity: 0.6;
   margin-bottom: 20px;
 }
 
-.modal-buttons {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+.gift-input {
+  width: 100%;
+  padding: 15px;
+  background: #0f172a;
+  border: 2px solid #334155;
+  border-radius: 14px;
+  color: white;
+  text-align: center;
+  font-size: 1.1rem;
+  font-weight: bold;
+  letter-spacing: 1px;
+  margin-bottom: 20px;
+  outline: none;
 }
 
-.redeem-confirm-btn {
-  background: #6c5ce7;
+.gift-input:focus {
+  border-color: var(--primary-color);
+}
+
+.modal-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.redeem-btn {
+  background: var(--accent-green);
   color: white;
   border: none;
-  padding: 12px;
-  border-radius: 12px;
+  padding: 14px;
+  border-radius: 14px;
+  font-weight: bold;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.redeem-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.close-modal-btn {
+  background: transparent;
+  color: var(--accent-red);
+  border: none;
+  font-size: 0.9rem;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+/* الفوتر */
+.footer {
+  text-align: center;
+  margin-top: 40px;
+  font-size: 0.8rem;
+  opacity: 0.4;
+}
+
+.footer span {
+  color: var(--primary-color);
   font-weight: bold;
 }
 
-.modal-close-btn {
-  background: transparent;
-  color: #ff7675;
-  border: none;
-  font-size: 0.9rem;
+/* شاشة التحميل والحظر */
+.loading-container, .banned-container {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid rgba(255,255,255,0.1);
+  border-top: 4px solid var(--primary-color);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 20px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
