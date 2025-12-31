@@ -7,70 +7,47 @@ import Page1 from './page1'
 
 declare global {
   interface Window {
-    Telegram?: {
-      WebApp: WebApp
-    }
+    Telegram?: { WebApp: WebApp }
   }
 }
 
 type User = {
   telegramId: number
   firstName: string
-  lastName?: string
-  username?: string
   points: number
   photoUrl?: string
-  status?: number // 0 = غير محظور, 1 = محظور
+  username?: string
+  status?: number
   banReason?: string
 }
 
 type Product = {
   id: number
   title: string
-  price: number // السعر هنا بالنقاط XP
+  price: number
   imageUrl: string
   category: string
-}
-
-type Broker = {
-  id: number
-  username: string
-  firstName: string
-  photoUrl: string
-  description: string
-  isOnline: boolean
-  lastSeen?: string
 }
 
 export default function Home() {
   const [user, setUser] = useState<User | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [products, setProducts] = useState<Product[]>([])
-  const [brokers, setBrokers] = useState<Broker[]>([])
-  const [activeTab, setActiveTab] = useState<'products' | 'brokers' | 'tasks'>('products')
+  const [activeTab, setActiveTab] = useState<'products' | 'tasks'>('products')
   const [loading, setLoading] = useState(true)
   const [isBanned, setIsBanned] = useState(false)
-
-  useEffect(() => {
-    const handleContextMenu = (e: Event) => e.preventDefault()
-    document.addEventListener('contextmenu', handleContextMenu)
-    return () => document.removeEventListener('contextmenu', handleContextMenu)
-  }, [])
 
   useEffect(() => {
     if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
       const tg = window.Telegram.WebApp
       tg.ready()
       tg.expand()
-
-      const initDataUnsafe = tg.initDataUnsafe || {}
-      if (initDataUnsafe.user) {
-        fetchUserData(initDataUnsafe.user)
+      if (tg.initDataUnsafe.user) {
+        fetchUserData(tg.initDataUnsafe.user)
       } else {
-        setError('لا توجد بيانات مستخدم متاحة')
+        setError('يرجى فتح البوت من تليجرام')
+        setLoading(false)
       }
-    } else {
-      setError('الرجاء فتح البوت عبر Telegram')
     }
   }, [])
 
@@ -78,233 +55,132 @@ export default function Home() {
     try {
       const res = await fetch('/api/user', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(tgUser),
       })
-      
       const data = await res.json()
       
-      if (data.error && data.status !== 1) {
-        setError(data.error)
-      } else {
-        if (data.status === 1) {
-          setIsBanned(true)
-          setUser({
-            telegramId: tgUser.id,
-            firstName: tgUser.first_name,
-            lastName: tgUser.last_name,
-            username: tgUser.username,
-            points: data.points || 0,
-            photoUrl: tgUser.photo_url,
-            status: data.status,
-            banReason: data.banReason || 'تم حظر حسابك'
-          })
-          return
-        }
-
-        setUser({
-          telegramId: tgUser.id,
-          firstName: tgUser.first_name,
-          lastName: tgUser.last_name,
-          username: tgUser.username,
-          points: data.points || 0,
-          photoUrl: tgUser.photo_url,
-          status: data.status || 0
-        })
-
-        fetchProducts()
-        fetchBrokers()
+      if (data.status === 1) {
+        setIsBanned(true)
+        setUser({ ...tgUser, telegramId: tgUser.id, points: data.points, status: 1, banReason: data.banReason })
+        setLoading(false)
+        return
       }
+
+      setUser({
+        telegramId: tgUser.id,
+        firstName: tgUser.first_name,
+        username: tgUser.username,
+        points: data.points || 0,
+        photoUrl: tgUser.photo_url
+      })
+      fetchProducts()
     } catch (err) {
-      setError('فشل في تحميل بيانات المستخدم')
+      setError('فشل في الاتصال بالسيرفر')
+      setLoading(false)
     }
   }, [])
 
-  const fetchProducts = async () => {
-    try {
-      // الأسعار هنا تم تحويلها لنقاط XP
-      const mockProducts: Product[] = [
-        {
-          id: 1,
-          title: "حساب جواهر 5000 اندرويد",
-          price: 170,
-          imageUrl: "https://i.postimg.cc/4d0Vdzhy/New-Project-40-C022-BBD.png",
-          category: "باونتي"
-        },
-        {
-          id: 2,
-          title: "حساب جواهر 5000 ايفون",
-          price: 170,
-          imageUrl: "https://i.postimg.cc/k51fQRb3/New-Project-40-321-E54-A.png",
-          category: "باونتي"
-        },
-        {
-          id: 3,
-          title: "حساب جواهر + كوزان اندرويد",
-          price: 200,
-          imageUrl: "https://i.postimg.cc/fL1CF4C8/New-Project-40-FE9627-F.png",
-          category: "باونتي"
-        },
-        {
-          id: 4,
-          title: "تحويل فليكسي",
-          price: 50,
-          imageUrl: "https://i.postimg.cc/9Q1p2w1R/New-Project-40-90-F0-A70.png",
-          category: "تحويل"
-        },
-        {
-          id: 5,
-          title: "عضوية شهرية ",
-          price: 600,
-          imageUrl: "https://i.postimg.cc/DzZcwfYC/New-Project-40-8383-F74.png",
-          category: "شحن"
-        }
-      ]
-      setProducts(mockProducts)
-    } catch (err) {
-      setError('فشل في تحميل المنتجات')
-    }
+  const fetchProducts = () => {
+    const mockProducts: Product[] = [
+      { id: 1, title: "حساب جواهر 5000 اندرويد", price: 170, imageUrl: "https://i.postimg.cc/4d0Vdzhy/New-Project-40-C022-BBD.png", category: "باونتي" },
+      { id: 2, title: "حساب جواهر 5000 ايفون", price: 170, imageUrl: "https://i.postimg.cc/k51fQRb3/New-Project-40-321-E54-A.png", category: "باونتي" },
+      { id: 3, title: "حساب جواهر + كوزان اندرويد", price: 200, imageUrl: "https://i.postimg.cc/fL1CF4C8/New-Project-40-FE9627-F.png", category: "باونتي" },
+      { id: 4, title: "تحويل فليكسي", price: 50, imageUrl: "https://i.postimg.cc/9Q1p2w1R/New-Project-40-90-F0-A70.png", category: "تحويل" },
+      { id: 5, title: "عضوية شهرية ", price: 600, imageUrl: "https://i.postimg.cc/DzZcwfYC/New-Project-40-8383-F74.png", category: "شحن" }
+    ]
+    setProducts(mockProducts)
+    setLoading(false)
   }
 
-  const fetchBrokers = async () => {
-    try {
-      const mockBrokers: Broker[] = [
-        {
-          id: 1,
-          username: "Kharwaydo",
-          firstName: "Borhane San",
-          photoUrl: "https://i.postimg.cc/JzZkhSCY/Screenshot-2025-05-08-20-30-56-49-50ef9f5a0f3fc24b6f0ffc8843167fe4.jpg",
-          description: "تاجر حسابات جواهر + وسيط ",
-          isOnline: true
-        }
-      ]
-      setBrokers(mockBrokers)
-      setLoading(false)
-    } catch (err) {
-      setError('فشل في تحميل بيانات الوسطاء')
-      setLoading(false)
-    }
-  }
+  const handlePurchase = async (product: Product) => {
+    const tg = window.Telegram?.WebApp
+    if (!user || !tg) return
 
-  const handleProductClick = (product: Product) => {
-    if (!user) return
-
-    // منطق التحقق من الرصيد الكافي
     if (user.points < product.price) {
-      if (window.Telegram?.WebApp) {
-        window.Telegram.WebApp.showPopup({
-          title: 'رصيد غير كافٍ',
-          message: `عذراً، سعر هذا المنتج ${product.price} XP، ورصيدك الحالي هو ${user.points} XP فقط.`,
-          buttons: [{ type: 'ok', text: 'حسناً', id: 'ok' }]
-        })
-      } else {
-        alert("رصيد غير كافٍ")
-      }
+      tg.showPopup({
+        title: 'رصيد غير كافٍ',
+        message: `سعر المنتج ${product.price} XP ورصيدك ${user.points} XP. شاهد الإعلانات لزيادة رصيدك!`,
+        buttons: [{ type: 'ok', text: 'حسناً' }]
+      })
       return
     }
 
-    // إذا كان الرصيد كافياً يفتح تليجرام
-    if (window.Telegram?.WebApp) {
-      const message = `مرحباً، أود شراء "${product.title}" مقابل ${product.price} XP. رصيدي الحالي هو ${user.points} XP.`
-      window.Telegram.WebApp.openTelegramLink(`https://t.me/Kharwaydo?text=${encodeURIComponent(message)}`)
-    }
+    tg.showConfirm(`هل أنت متأكد من شراء "${product.title}" مقابل ${product.price} XP؟`, async (confirmed) => {
+      if (confirmed) {
+        try {
+          const res = await fetch('/api/user', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+              telegramId: user.telegramId, 
+              action: 'purchase_product', 
+              price: product.price 
+            }),
+          })
+          const data = await res.json()
+
+          if (data.success) {
+            setUser(prev => prev ? { ...prev, points: data.newPoints } : null)
+            tg.showAlert('✅ تم الخصم بنجاح! سيتم توجيهك للمدير لاستلام طلبك.', () => {
+              const msg = `طلب شراء من المتجر:\nالمنتج: ${product.title}\nالسعر: ${product.price} XP\nالحالة: تم دفع النقاط آلياً.`
+              tg.openTelegramLink(`https://t.me/Kharwaydo?text=${encodeURIComponent(msg)}`)
+            })
+          } else {
+            tg.showAlert('❌ فشل الشراء: ' + data.message)
+          }
+        } catch (e) {
+          tg.showAlert('❌ خطأ في الشبكة')
+        }
+      }
+    })
   }
 
-  const handleBrokerClick = (broker: Broker) => {
-    if (window.Telegram?.WebApp) {
-      const message = `مرحباً ${broker.firstName}، أنا مهتم بالتعامل معك كوسيط موثوق.`
-      window.Telegram.WebApp.openTelegramLink(`https://t.me/${broker.username}?text=${encodeURIComponent(message)}`)
-    }
-  }
-
-  if (isBanned && user?.banReason) {
+  if (isBanned) {
     return (
       <div className="banned-container">
         <div className="banned-icon">🚫</div>
-        <h1 className="banned-title">لقد تم حظرك</h1>
-        <p className="banned-message">{user.banReason}</p>
+        <h1>أنت محظور</h1>
+        <p>{user?.banReason}</p>
       </div>
     )
   }
 
-  if (error) {
-    return (
-      <div className="error-container">
-        <div className="error-icon">⚠️</div>
-        <div className="error-message">{error}</div>
-        <button className="retry-button" onClick={() => window.location.reload()}>حاول مرة أخرى</button>
-      </div>
-    )
-  }
+  if (loading) return <div className="loading-container"><div className="loading-spinner"></div><p>جاري التحميل...</p></div>
 
-  if (!user || loading) {
-    return (
-      <div className="loading-container">
-        <div className="loading-spinner"></div>
-        <div className="loading-text">لا تقلق يولد 🤣</div>
-      </div>
-    )
-  }
+  if (error) return <div className="error-container">⚠️ {error}</div>
 
   return (
     <div className="main-container">
       <div className="user-header">
-        <img
-          src={user.photoUrl || '/default-avatar.png'}
-          alt="profile"
-          className="user-avatar"
-          onError={(e) => {(e.target as HTMLImageElement).src = '/default-avatar.png'}}
-        />
+        <img src={user?.photoUrl || '/default-avatar.png'} className="user-avatar" alt="profile" />
         <div className="user-info">
-          <h1 className="user-name">مرحباً، <span>{user.firstName}</span>!</h1>
-          {user.username && <p className="user-username">@{user.username}</p>}
+          <h1 className="user-name">مرحباً، <span>{user?.firstName}</span>!</h1>
+          <p className="user-username">@{user?.username}</p>
         </div>
       </div>
 
       <div className="balance-card">
         <div className="balance-label">رصيدك الحالي</div>
-        <div className="balance-amount">
-          {user.points.toLocaleString()} <span>XP</span>
-        </div>
+        <div className="balance-amount">{user?.points.toLocaleString()} <span>XP</span></div>
       </div>
 
       <div className="tabs-container">
         <button className={`tab-button ${activeTab === 'products' ? 'active' : ''}`} onClick={() => setActiveTab('products')}>المنتجات</button>
-        <button className={`tab-button ${activeTab === 'brokers' ? 'active' : ''}`} onClick={() => setActiveTab('brokers')}>وسطاء موثوقون</button>
         <button className={`tab-button ${activeTab === 'tasks' ? 'active' : ''}`} onClick={() => setActiveTab('tasks')}>الهدية اليومية</button>
       </div>
 
       {activeTab === 'products' ? (
         <div className="products-grid">
           {products.map(product => (
-            <div key={product.id} className="product-card" onClick={() => handleProductClick(product)}>
+            <div key={product.id} className="product-card" onClick={() => handlePurchase(product)}>
               <div className="product-image-container">
                 <img src={product.imageUrl} alt={product.title} className="product-image" />
                 <div className="product-badge">{product.category}</div>
               </div>
               <div className="product-info">
                 <h3 className="product-title">{product.title}</h3>
-                <div className="product-price">{product.price.toLocaleString()} XP</div>
-              </div>
-            </div>
-          ))}
-        </div>
-      ) : activeTab === 'brokers' ? (
-        <div className="brokers-list">
-          {brokers.map(broker => (
-            <div key={broker.id} className="broker-card" onClick={() => handleBrokerClick(broker)}>
-              <div className="broker-avatar-container">
-                <img src={broker.photoUrl || '/default-avatar.png'} alt="broker" className="broker-avatar" />
-                <div className={`online-status ${broker.isOnline ? 'online' : 'offline'}`}>
-                  {broker.isOnline ? 'متصل' : 'غير متصل'}
-                </div>
-              </div>
-              <div className="broker-info">
-                <h3 className="broker-name">{broker.firstName} <span className="broker-username">@{broker.username}</span></h3>
-                <p className="broker-description">{broker.description}</p>
-                <button className="contact-broker-button">التواصل مع الوسيط</button>
+                <div className="product-price">{product.price} XP</div>
               </div>
             </div>
           ))}
@@ -313,9 +189,7 @@ export default function Home() {
         <Page1 />
       )}
 
-      <div className="footer">
-        <p>Developed By <span>Borhane San</span></p>
-      </div>
+      <div className="footer"><p>Developed By <span>Borhane San</span></p></div>
     </div>
   )
 }
