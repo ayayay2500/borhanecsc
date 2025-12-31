@@ -103,26 +103,23 @@ export default function Home() {
     const tg = window.Telegram?.WebApp
     if (!user || !tg) return
 
-    // 1. التحقق من الرصيد أولاً
     if (user.points < product.price) {
       tg.showPopup({
         title: 'رصيد غير كافٍ',
         message: `سعر المنتج ${product.price} XP ورصيدك ${user.points} XP. شاهد الإعلانات لزيادة رصيدك!`,
-        buttons: [{ type: 'ok', text: 'حسناً' }]
+        buttons: [{ type: 'ok' }] // تم إزالة 'text' لإصلاح خطأ TypeScript
       })
       return
     }
 
-    // 2. طلب تأكيد الشراء (نعم/لا)
-    tg.showConfirm(`هل أنت متأكد من شراء "${product.title}" مقابل ${product.price} XP؟ سيتم خصم النقاط فوراً.`, async (confirmed) => {
+    tg.showConfirm(`هل أنت متأكد من شراء "${product.title}" مقابل ${product.price} XP؟`, async (confirmed) => {
       if (confirmed) {
-        tg.MainButton.setText('جاري خصم النقاط...').show()
         try {
           const res = await fetch('/api/user', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ 
-              id: user.telegramId, 
+              telegramId: user.telegramId, // نستخدم telegramId ليتوافق مع السيرفر
               action: 'purchase_product', 
               price: product.price 
             }),
@@ -131,17 +128,15 @@ export default function Home() {
 
           if (data.success) {
             setUser(prev => prev ? { ...prev, points: data.newPoints } : null)
-            tg.showAlert('✅ تم الخصم بنجاح! سيتم توجيهك الآن للمدير.', () => {
-              const msg = `طلب شراء مؤكد:\nالمنتج: ${product.title}\nالسعر: ${product.price} XP\nرقم العملية: #${Math.floor(Math.random()*10000)}`
+            tg.showAlert('✅ تم الخصم بنجاح! تواصل مع المدير الآن.', () => {
+              const msg = `طلب شراء مؤكد:\nالمنتج: ${product.title}\nالسعر: ${product.price} XP`
               tg.openTelegramLink(`https://t.me/Kharwaydo?text=${encodeURIComponent(msg)}`)
             })
           } else {
-            tg.showAlert('❌ فشل الخصم: ' + data.message)
+            tg.showAlert('❌ فشل الخصم: ' + (data.message || data.error))
           }
         } catch (e) {
-          tg.showAlert('❌ حدث خطأ أثناء العملية')
-        } finally {
-          tg.MainButton.hide()
+          tg.showAlert('❌ حدث خطأ في الشبكة')
         }
       }
     })
@@ -153,14 +148,13 @@ export default function Home() {
         <div className="banned-content">
           <div className="banned-icon">🚫</div>
           <h1 className="banned-title">أنت محظور</h1>
-          <p className="banned-message">{user?.banReason || 'تم حظر حسابك لمخالفة القوانين'}</p>
-          <div className="banned-contact">للمراجعة تواصل مع <a href="https://t.me/Kharwaydo">المدير</a></div>
+          <p className="banned-message">{user?.banReason || 'تم حظر حسابك'}</p>
         </div>
       </div>
     )
   }
 
-  if (loading) return <div className="loading-container"><div className="loading-spinner"></div><p className="loading-text">جاري تحميل المتجر...</p></div>
+  if (loading) return <div className="loading-container"><div className="loading-spinner"></div><p className="loading-text">جاري التحميل...</p></div>
 
   if (error) return <div className="error-container">⚠️ {error}</div>
 
