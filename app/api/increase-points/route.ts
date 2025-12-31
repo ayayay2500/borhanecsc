@@ -1,45 +1,39 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
+const MAX_ADS = 7;
+
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url)
   const telegramId = Number(searchParams.get('telegramId'))
 
   if (!telegramId) {
-    return NextResponse.json(
-      { error: 'Telegram ID مطلوب' },
-      { status: 400 }
-    )
+    return NextResponse.json({ error: 'Telegram ID مطلوب' }, { status: 400 })
   }
 
   try {
-    const user = await prisma.user.findUnique({
-      where: { telegramId }
-    })
+    const user = await prisma.user.findUnique({ where: { telegramId } })
 
     if (!user) {
-      return NextResponse.json(
-        { error: 'المستخدم غير موجود' },
-        { status: 404 }
-      )
+      return NextResponse.json({ error: 'المستخدم غير موجود' }, { status: 404 })
     }
 
     const now = new Date()
-    const twentyFourHours = 24 * 60 * 60 * 1000
-    const canClaim = !user.updatedAt || 
-      (now.getTime() - new Date(user.updatedAt).getTime()) >= twentyFourHours
+    const lastAdDate = user.lastAdDate ? new Date(user.lastAdDate) : new Date(0)
+    
+    // التحقق هل نحن في يوم جديد (مقارنة اليوم والشهر والسنة)
+    const isNewDay = now.toDateString() !== lastAdDate.toDateString()
+    const currentCount = isNewDay ? 0 : (user.adsCount || 0)
 
     return NextResponse.json({
       success: true,
-      canClaim,
-      nextClaimTime: canClaim ? null : new Date(new Date(user.updatedAt).getTime() + twentyFourHours).toISOString()
+      canClaim: currentCount < MAX_ADS,
+      count: currentCount,
+      maxAds: MAX_ADS
     })
   } catch (error) {
     console.error('Error:', error)
-    return NextResponse.json(
-      { error: 'خطأ في الخادم' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'خطأ في الخادم' }, { status: 500 })
   }
 }
 
@@ -47,32 +41,26 @@ export async function POST(req: Request) {
   const { telegramId } = await req.json()
 
   if (!telegramId) {
-    return NextResponse.json(
-      { error: 'Telegram ID مطلوب' },
-      { status: 400 }
-    )
+    return NextResponse.json({ error: 'Telegram ID مطلوب' }, { status: 400 })
   }
 
   try {
-    const user = await prisma.user.findUnique({
-      where: { telegramId: Number(telegramId) }
-    })
+    const user = await prisma.user.findUnique({ where: { telegramId: Number(telegramId) } })
 
     if (!user) {
-      return NextResponse.json(
-        { error: 'المستخدم غير موجود' },
-        { status: 404 }
-      )
+      return NextResponse.json({ error: 'المستخدم غير موجود' }, { status: 404 })
     }
 
     const now = new Date()
-    const twentyFourHours = 24 * 60 * 60 * 1000
+    const lastAdDate = user.lastAdDate ? new Date(user.lastAdDate) : new Date(0)
+    const isNewDay = now.toDateString() !== lastAdDate.toDateString()
 
-    if (user.updatedAt && (now.getTime() - new Date(user.updatedAt).getTime()) < twentyFourHours) {
+    let currentCount = isNewDay ? 0 : (user.adsCount || 0)
+
+    if (currentCount >= MAX_ADS) {
       return NextResponse.json({
         success: false,
-        message: 'لقد حصلت بالفعل على جائزتك اليومية',
-        nextClaimTime: new Date(new Date(user.updatedAt).getTime() + twentyFourHours).toISOString()
+        message: 'لقد استهلكت جميع محاولاتك لليوم (7/7)',
       })
     }
 
@@ -80,20 +68,19 @@ export async function POST(req: Request) {
       where: { telegramId: Number(telegramId) },
       data: {
         points: { increment: 1 },
-        updatedAt: now.toISOString()
+        adsCount: currentCount + 1,
+        lastAdDate: now
       }
     })
 
     return NextResponse.json({
       success: true,
       points: updatedUser.points,
-      nextClaimTime: new Date(now.getTime() + twentyFourHours).toISOString()
+      newCount: updatedUser.adsCount,
+      maxAds: MAX_ADS
     })
   } catch (error) {
     console.error('Error:', error)
-    return NextResponse.json(
-      { error: 'خطأ في الخادم' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'خطأ في الخادم' }, { status: 500 })
   }
 }
