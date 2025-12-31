@@ -1,19 +1,44 @@
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  telegramId Int      @unique
+  username   String?
+  firstName  String?
+  lastName   String?
+  points     Int      @default(0)
+  status     Int      @default(0)  // 0 = غير محظور، 1 = محظور
+  banReason  String?  
+  photoUrl   String?
+  adsCount   Int      @default(0)    
+  lastAdDate DateTime @default(now()) 
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
 model GiftCode {
   id          String     @id @default(auto()) @map("_id") @db.ObjectId
   code        String     @unique
-  points      Int        // عدد النقاط التي يمنحها الكود
-  maxUses     Int        @default(1) // أقصى عدد للمستخدمين الذين يمكنهم استخدامه
-  currentUses Int        @default(0) // كم مرة استُخدم حتى الآن
+  points      Int        
+  maxUses     Int        @default(1) 
+  currentUses Int        @default(0) 
   createdAt   DateTime   @default(now())
   usedBy      UsedCode[]
 }
 
 model UsedCode {
   id         String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId     Int      // تليجرام آيدي للمستخدم
+  userId     Int      
   codeId     String   @db.ObjectId
   usedAt     DateTime @default(now())
   giftCode   GiftCode @relation(fields: [codeId], references: [id])
 
-  @@unique([userId, codeId]) // يمنع نفس المستخدم من استخدام نفس الكود مرتين
+  @@unique([userId, codeId])
 }
