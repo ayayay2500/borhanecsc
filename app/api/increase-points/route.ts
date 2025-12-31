@@ -28,7 +28,6 @@ export async function POST(req: Request) {
     const body = await req.json()
     const telegramId = Number(body.telegramId || body.id)
 
-    // التأكد من وجود المستخدم أو إنشائه
     const user = await prisma.user.upsert({
       where: { telegramId },
       update: { username: body.username, firstName: body.first_name || body.firstName },
@@ -37,30 +36,24 @@ export async function POST(req: Request) {
 
     if (user.status === 1) return NextResponse.json({ error: 'محظور', status: 1 }, { status: 403 })
 
-    // --- منطق استرداد الكود (تم تحسينه للهاتف) ---
+    // --- 1. منطق استرداد الكود (حل مشكلة المسافات الخفية للهاتف) ---
     if (body.action === 'redeem_code') {
-      const inputCode = body.code.trim(); // البحث بدون تحويل قسري لحالة الأحرف أولاً
+      const inputCode = String(body.code).trim().toUpperCase();
 
-      // البحث عن الكود - جرب البحث كما هو أو بحروف كبيرة
-      const gift = await prisma.giftCode.findFirst({
-        where: {
-          OR: [
-            { code: inputCode },
-            { code: inputCode.toUpperCase() }
-          ]
-        }
-      });
+      // البحث عن الكود بطريقة مرنة تتجاهل المسافات في قاعدة البيانات
+      const giftCodes = await prisma.giftCode.findMany();
+      const gift = giftCodes.find(g => g.code.trim().toUpperCase() === inputCode);
 
       if (!gift) {
-        return NextResponse.json({ success: false, message: 'كود غير صالح' });
+        return NextResponse.json({ success: false, message: 'كود غير صحيح أو غير موجود' });
       }
 
-      // التحقق من عدد مرات الاستخدام الكلية
-      if (Number(gift.currentUses) >= Number(gift.maxUses)) {
-        return NextResponse.json({ success: false, message: 'انتهت صلاحية الكود' });
+      // التحقق من الصلاحية
+      if (gift.currentUses >= gift.maxUses) {
+        return NextResponse.json({ success: false, message: 'انتهت كمية هذا الكود' });
       }
 
-      // التحقق من استخدام المستخدم لهذا الكود مسبقاً
+      // فحص الاستخدام السابق
       const alreadyUsed = await prisma.usedCode.findFirst({
         where: {
           userId: telegramId,
@@ -69,15 +62,14 @@ export async function POST(req: Request) {
       });
 
       if (alreadyUsed) {
-        return NextResponse.json({ success: false, message: 'استخدمت الكود مسبقاً' });
+        return NextResponse.json({ success: false, message: 'لقد استعملت هذا الكود من قبل' });
       }
 
-      // تنفيذ العملية بنظام Transaction لضمان الأمان
       try {
         const result = await prisma.$transaction([
           prisma.user.update({
             where: { telegramId },
-            data: { points: { increment: Number(gift.points) } }
+            data: { points: { increment: gift.points } }
           }),
           prisma.giftCode.update({
             where: { id: gift.id },
@@ -93,13 +85,12 @@ export async function POST(req: Request) {
           newPoints: result[0].points, 
           amount: gift.points 
         });
-      } catch (err) {
-        console.error("Redeem Transaction Error:", err);
+      } catch (e) {
         return NextResponse.json({ success: false, message: 'خطأ في تحديث البيانات' });
       }
     }
 
-    // --- منطق مشاهدة الإعلانات ---
+    // --- 2. منطق مشاهدة الإعلانات ---
     if (body.action === 'watch_ad') {
       const now = new Date();
       const lastAdDate = user.lastAdDate ? new Date(user.lastAdDate) : new Date(0);
@@ -115,7 +106,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: true, newCount: updated.adsCount, points: updated.points })
     }
 
-    // --- منطق الشراء ---
+    // --- 3. منطق شراء المنتجات ---
     if (body.action === 'purchase_product') {
       if (user.points < body.price) return NextResponse.json({ success: false, message: 'رصيد غير كافٍ' }, { status: 400 });
       const updated = await prisma.user.update({
@@ -127,7 +118,6 @@ export async function POST(req: Request) {
 
     return NextResponse.json(user)
   } catch (e) {
-    console.error("API Route Error:", e);
     return NextResponse.json({ error: 'خطأ داخلي' }, { status: 500 })
   }
 }
