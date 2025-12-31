@@ -1,495 +1,167 @@
-
-/* styles.css - كامل مع التعديلات المطلوبة */
 @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap');
+
 :root {
   --primary: #6c5ce7;
-  --primary-light: #a29bfe;
   --primary-dark: #5649c0;
-  --secondary: #00cec9;
-  --secondary-light: #55efc4;
+  --secondary: #a29bfe;
   --dark: #2d3436;
   --darker: #1e272e;
   --light: #f5f6fa;
-  --light-gray: #dfe6e9;
   --danger: #ff7675;
-  --danger-light: #ff9a9a;
   --success: #00b894;
-  --warning: #fdcb6e;
-  --info: #74b9ff;
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 16px;
+  --radius-md: 15px;
 }
 
-/* الأساسيات */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
   user-select: none;
-  -webkit-tap-highlight-color: transparent;
+  font-family: 'Tajawal', sans-serif;
 }
 
 body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   background-color: var(--darker);
   color: var(--light);
-  line-height: 1.5;
-}
-
-img {
-  pointer-events: none;
-  -webkit-user-drag: none;
+  overflow-x: hidden;
 }
 
 .main-container {
-  max-width: 100%;
   padding: 1rem;
   min-height: 100vh;
+  background: linear-gradient(135deg, var(--darker) 0%, #161d23 100%);
 }
 
-/* رأس المستخدم */
+/* Header & Avatar */
 .user-header {
   display: flex;
   align-items: center;
   gap: 1rem;
   margin-bottom: 1.5rem;
   padding: 1rem;
-  background: rgba(44, 62, 80, 0.5);
+  background: rgba(44, 62, 80, 0.4);
   border-radius: var(--radius-md);
   border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
 }
 
 .user-avatar {
-  width: 50px;
-  height: 50px;
+  width: 55px;
+  height: 55px;
   border-radius: 50%;
-  object-fit: cover;
   border: 2px solid var(--primary);
+  object-fit: cover;
 }
 
-.user-info {
-  flex: 1;
-  overflow: hidden;
-}
+.user-name { font-size: 1.1rem; }
+.user-name span { color: var(--secondary); }
+.user-username { font-size: 0.85rem; opacity: 0.7; color: var(--secondary); }
 
-.user-name {
-  margin: 0;
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: var(--light);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.user-name span {
-  color: var(--secondary-light);
-}
-
-.user-username {
-  margin: 0;
-  font-size: 0.85rem;
-  color: var(--secondary);
-  opacity: 0.8;
-}
-
-/* بطاقة الرصيد المُحسَّنة */
+/* Balance Card */
 .balance-card {
   background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
   padding: 1.5rem;
   border-radius: var(--radius-md);
   margin-bottom: 1.5rem;
-  box-shadow: 0 8px 24px rgba(108, 92, 231, 0.3);
-  position: relative;
-  overflow: hidden;
-}
-
-.balance-card::before {
-  content: '';
-  position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: radial-gradient(
-    circle, 
-    rgba(255, 255, 255, 0.15) 0%, 
-    transparent 70%
-  );
-  transform: rotate(30deg);
-  animation: shine 6s linear infinite;
-}
-
-@keyframes shine {
-  0% { transform: rotate(30deg) translate(-10%, -10%); }
-  100% { transform: rotate(30deg) translate(10%, 10%); }
-}
-
-.balance-label {
-  font-size: 0.9rem;
-  color: rgba(255, 255, 255, 0.9);
-  margin-bottom: 0.5rem;
-}
-
-.balance-amount {
-  font-size: 1.8rem;
-  font-weight: 700;
-  color: white;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-}
-
-.balance-amount span {
-  font-size: 1rem;
-  color: rgba(255, 255, 255, 0.8);
-}
-
-/* صفحة الحظر المُحسَّنة */
-.banned-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 100vh;
-  padding: 2rem;
-  background: linear-gradient(135deg, #1a1a2e 0%, var(--darker) 100%);
   text-align: center;
-  position: relative;
-  overflow: hidden;
+  box-shadow: 0 8px 25px rgba(108, 92, 231, 0.3);
 }
 
-.banned-container::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: 
-    radial-gradient(circle at 20% 30%, rgba(255, 0, 0, 0.08) 0%, transparent 25%),
-    radial-gradient(circle at 80% 70%, rgba(255, 0, 0, 0.08) 0%, transparent 25%);
-  animation: pulse 12s ease infinite alternate;
-}
+.balance-amount { font-size: 2rem; font-weight: 700; }
+.balance-amount span { font-size: 1rem; opacity: 0.8; }
 
-@keyframes pulse {
-  0% { opacity: 0.3; transform: scale(1); }
-  50% { opacity: 0.6; transform: scale(1.02); }
-  100% { opacity: 0.3; transform: scale(1); }
-}
-
-.banned-content {
-  position: relative;
-  z-index: 10;
-  max-width: 500px;
-  width: 100%;
-  padding: 2rem;
-  background: rgba(30, 39, 46, 0.8);
-  backdrop-filter: blur(10px);
-  border-radius: var(--radius-lg);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-}
-
-.banned-icon {
-  font-size: 4rem;
-  margin-bottom: 1.5rem;
-  color: var(--danger);
-  animation: shake 1.5s ease infinite;
-}
-
-@keyframes shake {
-  0%, 100% { transform: translateY(0) rotate(0deg); }
-  20% { transform: translateY(-5px) rotate(-3deg); }
-  40% { transform: translateY(5px) rotate(3deg); }
-  60% { transform: translateY(-3px) rotate(-2deg); }
-  80% { transform: translateY(3px) rotate(2deg); }
-}
-
-.banned-title {
-  font-size: 1.8rem;
-  font-weight: 700;
-  margin-bottom: 1rem;
-  color: var(--danger-light);
-}
-
-.banned-message {
-  font-size: 1rem;
-  color: var(--light-gray);
-  margin-bottom: 2rem;
-  line-height: 1.6;
-}
-
-.banned-contact {
-  background: rgba(255, 118, 117, 0.1);
-  border-left: 3px solid var(--danger);
-  padding: 1rem;
-  border-radius: 0 var(--radius-md) var(--radius-md) 0;
-  margin-bottom: 2rem;
-  text-align: center;
-}
-
-.banned-contact a {
-  color: var(--secondary-light);
-  text-decoration: none;
-  font-weight: 600;
-}
-
-/* باقي المكونات... */
+/* Tabs */
 .tabs-container {
   display: flex;
-  background: rgba(44, 62, 80, 0.5);
-  border-radius: var(--radius-sm);
-  padding: 0.3rem;
-  margin-bottom: 1.5rem;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.05);
+  padding: 5px;
+  border-radius: 12px;
+  margin-bottom: 20px;
 }
 
 .tab-button {
   flex: 1;
-  padding: 0.7rem;
+  padding: 10px;
   border: none;
   background: transparent;
-  color: var(--light);
-  font-weight: 600;
-  cursor: pointer;
-  border-radius: var(--radius-sm);
-  font-size: 0.9rem;
-}
-
-.tab-button.active {
-  background: var(--primary);
   color: white;
+  font-weight: bold;
+  cursor: pointer;
+  border-radius: 10px;
+  transition: 0.3s;
 }
 
+.tab-button.active { background: var(--primary); }
+
+/* Products Grid */
 .products-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 1rem;
-  margin-bottom: 1rem;
+  gap: 15px;
 }
 
 .product-card {
-  background: rgba(44, 62, 80, 0.5);
-  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: 0.3s;
 }
 
-.product-image-container {
-  position: relative;
-  width: 100%;
-  height: 120px;
-  overflow: hidden;
-}
+.product-card:active { transform: scale(0.95); }
 
 .product-image {
   width: 100%;
-  height: 100%;
+  height: 120px;
   object-fit: cover;
 }
+
+.product-info { padding: 10px; }
+.product-title { font-size: 0.9rem; margin-bottom: 5px; height: 40px; overflow: hidden; }
+.product-price { color: var(--secondary); font-weight: bold; }
 
 .product-badge {
   position: absolute;
-  top: 0.5rem;
-  right: 0.5rem;
+  top: 5px;
+  right: 5px;
   background: var(--primary);
-  color: white;
-  padding: 0.2rem 0.6rem;
-  border-radius: var(--radius-sm);
   font-size: 0.7rem;
-  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 10px;
 }
 
-.product-info {
-  padding: 0.8rem;
-}
-
-.product-title {
-  margin: 0 0 0.5rem 0;
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: var(--light);
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  min-height: 2.5rem;
-}
-
-.product-price {
-  font-size: 1rem;
-  font-weight: 700;
-  color: var(--secondary-light);
-}
-
-.brokers-list {
+/* Banned Screen */
+.banned-container {
+  height: 100vh;
   display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  margin-bottom: 1rem;
-}
-
-.broker-card {
-  background: rgba(44, 62, 80, 0.5);
-  border-radius: var(--radius-md);
-  padding: 1rem;
-  display: flex;
-  gap: 1rem;
-  align-items: center;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.broker-avatar-container {
-  position: relative;
-}
-
-.broker-avatar {
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 2px solid var(--primary);
-}
-
-.online-status {
-  position: absolute;
-  bottom: 0;
-  right: 0;
-  font-size: 0.6rem;
-  padding: 0.2rem 0.4rem;
-  border-radius: var(--radius-sm);
-  background: var(--dark);
-  color: var(--light);
-}
-
-.online-status.online {
-  background: var(--success);
-  color: var(--dark);
-}
-
-.online-status.offline {
-  background: var(--danger);
-  color: white;
-}
-
-.broker-info {
-  flex: 1;
-}
-
-.broker-name {
-  margin: 0 0 0.2rem 0;
-  font-size: 1rem;
-  color: var(--light);
-}
-
-.broker-username {
-  font-size: 0.8rem;
-  color: var(--secondary);
-  opacity: 0.8;
-}
-
-.broker-description {
-  margin: 0.3rem 0 0.7rem 0;
-  font-size: 0.8rem;
-  color: rgba(255, 255, 255, 0.7);
-}
-
-.contact-broker-button {
-  background: var(--primary);
-  color: white;
-  border: none;
-  padding: 0.5rem;
-  border-radius: var(--radius-sm);
-  font-size: 0.8rem;
-  font-weight: 600;
-  cursor: pointer;
-  width: 100%;
-}
-
-.error-container {
-  display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 100vh;
-  padding: 2rem;
   text-align: center;
-  background: var(--darker);
+  padding: 20px;
 }
 
-.error-icon {
-  font-size: 2.5rem;
-  margin-bottom: 1rem;
-  color: var(--danger);
-}
+.banned-icon { font-size: 4rem; color: var(--danger); margin-bottom: 15px; }
+.banned-contact a { color: var(--primary); text-decoration: none; font-weight: bold; }
 
-.error-message {
-  font-size: 1rem;
-  color: var(--light);
-  margin-bottom: 2rem;
-}
-
-.retry-button {
-  background: var(--primary);
-  color: white;
-  border: none;
-  padding: 0.8rem 1.5rem;
-  border-radius: var(--radius-md);
-  font-size: 0.9rem;
-  font-weight: 600;
-  cursor: pointer;
-}
-
+/* Loading */
 .loading-container {
+  height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 100vh;
-  background: var(--darker);
 }
 
 .loading-spinner {
   width: 40px;
   height: 40px;
   border: 4px solid rgba(255, 255, 255, 0.1);
+  border-top: 4px solid var(--primary);
   border-radius: 50%;
-  border-top-color: var(--primary);
   animation: spin 1s linear infinite;
 }
 
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
+@keyframes spin { to { transform: rotate(360deg); } }
 
-.loading-text {
-  margin-top: 1rem;
-  font-size: 1rem;
-  color: var(--secondary);
-}
-
-.footer {
-  text-align: center;
-  margin-top: 2rem;
-  padding: 1rem;
-  color: rgba(255, 255, 255, 0.5);
-  font-size: 0.8rem;
-}
-
-.footer span {
-  color: var(--secondary);
-}
-
-@media (max-width: 480px) {
-  .products-grid {
-    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-  }
-  
-  .banned-content {
-    padding: 1.5rem;
-  }
-  
-  .banned-title {
-    font-size: 1.5rem;
-  }
-}
+.footer { text-align: center; padding: 20px; opacity: 0.5; font-size: 0.8rem; }
+.footer span { color: var(--primary); }
