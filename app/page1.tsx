@@ -12,16 +12,18 @@ export default function DailyReward() {
   const MAX_ADS = 7
 
   useEffect(() => {
+    // التأكد من أن الكود يعمل داخل المتصفح وأن مكتبة تليجرام جاهزة
     if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
       const tg = window.Telegram.WebApp
       tg.ready()
+      
       const initDataUnsafe = tg.initDataUnsafe || {}
       
       if (initDataUnsafe.user) {
         setUser(initDataUnsafe.user)
         fetchStatus(initDataUnsafe.user.id)
       } else {
-        setError('يرجى فتح التطبيق من تليجرام')
+        setError('يرجى فتح التطبيق من تليجرام مباشرة')
         setIsLoading(false)
       }
     }
@@ -29,13 +31,24 @@ export default function DailyReward() {
 
   const fetchStatus = async (telegramId: number) => {
     try {
-      // نستخدم المسار الموحد مع تمرير الـ ID كـ Query Parameter
+      setIsLoading(true)
+      // طلب البيانات من المسار الموحد /api/user
       const res = await fetch(`/api/user?telegramId=${telegramId}`)
+      
+      if (!res.ok) {
+        throw new Error('Server response was not ok')
+      }
+
       const data = await res.json()
-      if (data.success) {
-        setAdsCount(data.count)
+      
+      // تحديث العداد بناءً على البيانات القادمة من السيرفر
+      // نتحقق من وجود count أو نضع 0 كقيمة افتراضية
+      if (data.success !== undefined || data.telegramId) {
+        setAdsCount(data.count || 0)
+        setError(null)
       }
     } catch (err) {
+      console.error("Fetch Error:", err)
       setError('فشل الاتصال بالسيرفر')
     } finally {
       setIsLoading(false)
@@ -46,9 +59,9 @@ export default function DailyReward() {
     if (!user || adsCount >= MAX_ADS || isLoading) return
 
     setIsLoading(true)
+    setError(null)
     
     try {
-      // إرسال طلب "مشاهدة إعلان" إلى السيرفر الموحد
       const res = await fetch('/api/user', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -62,32 +75,47 @@ export default function DailyReward() {
       
       if (data.success) {
         setAdsCount(data.newCount)
-        setNotification('🎉 أحسنت! حصلت على نقطة XP إضافية')
+        setNotification('🎉 أحسنت! حصلت على 1 XP')
         
-        // تحديث النقاط في الصفحة الرئيسية (اختياري، يفضل إعادة تحميل الصفحة أو استخدام State Management)
+        // إخفاء التنبيه بعد 3 ثوانٍ
         setTimeout(() => setNotification(''), 3000)
       } else {
         setError(data.message || 'انتهت محاولات اليوم')
       }
     } catch (err) {
-      setError('حدث خطأ أثناء التحديث')
+      setError('حدث خطأ أثناء تحديث النقاط')
     } finally {
       setIsLoading(false)
     }
   }
 
-  if (error) return <div className="error-container"><p>{error}</p></div>
+  if (error && !adsCount) {
+    return (
+      <div className="reward-container">
+        <div className="error-container">
+          <p>{error}</p>
+          <button className="retry-button" onClick={() => user && fetchStatus(user.id)}>
+            إعادة المحاولة
+          </button>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="reward-container">
       <h1 className="reward-title">🎁 هدايا يومية</h1>
       
       <div className="reward-card">
-        <p style={{ marginBottom: '15px' }}>شاهد إعلانات لربح نقاط XP وشراء العروض</p>
+        <p style={{ marginBottom: '15px', fontSize: '0.9rem', opacity: 0.9 }}>
+          شاهد الإعلانات لجمع نقاط XP واستبدالها بالجوائز
+        </p>
+        
         <div className="ads-counter-info">
           <span>التقدم اليومي:</span>
           <span>{adsCount} / {MAX_ADS}</span>
         </div>
+        
         <div className="progress-bar-container">
           <div 
             className="progress-bar-fill" 
@@ -104,16 +132,16 @@ export default function DailyReward() {
         className={`claim-btn ${adsCount >= MAX_ADS ? 'disabled' : ''}`}
       >
         {isLoading ? (
-          <div className="loading-spinner" style={{width: '20px', height: '20px', borderTopColor: '#000'}}></div>
+          <div className="loading-spinner" style={{ width: '20px', height: '20px' }}></div>
         ) : adsCount >= MAX_ADS ? (
-          '✅ اكتملت إعلانات اليوم'
+          '✅ اكتملت مهام اليوم'
         ) : (
-          '📺 شاهد إعلان لتربح (1 XP)'
+          '📺 شاهد إعلان لتربح XP'
         )}
       </button>
 
       {adsCount >= MAX_ADS && (
-        <p className="reset-info">يتجدد العداد تلقائياً عند منتصف الليل</p>
+        <p className="reset-info">يتم تصغير العداد تلقائياً كل 24 ساعة</p>
       )}
     </div>
   )
