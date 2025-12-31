@@ -29,7 +29,8 @@ export default function DailyReward() {
 
   const fetchStatus = async (telegramId: number) => {
     try {
-      const res = await fetch(`/api/increase-points?telegramId=${telegramId}`)
+      // نستخدم المسار الموحد مع تمرير الـ ID كـ Query Parameter
+      const res = await fetch(`/api/user?telegramId=${telegramId}`)
       const data = await res.json()
       if (data.success) {
         setAdsCount(data.count)
@@ -47,22 +48,26 @@ export default function DailyReward() {
     setIsLoading(true)
     
     try {
-      // هنا يمكنك استدعاء كود شركة الإعلانات فعلياً
-      // بعد نجاح الإعلان، نقوم بتحديث النقاط:
-      const res = await fetch('/api/increase-points', {
+      // إرسال طلب "مشاهدة إعلان" إلى السيرفر الموحد
+      const res = await fetch('/api/user', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ telegramId: user.id }),
+        body: JSON.stringify({ 
+          id: user.id, 
+          action: 'watch_ad' 
+        }),
       })
       
       const data = await res.json()
       
       if (data.success) {
         setAdsCount(data.newCount)
-        setNotification('🎉 أحسنت! حصلت على نقطة إضافية')
+        setNotification('🎉 أحسنت! حصلت على نقطة XP إضافية')
+        
+        // تحديث النقاط في الصفحة الرئيسية (اختياري، يفضل إعادة تحميل الصفحة أو استخدام State Management)
         setTimeout(() => setNotification(''), 3000)
       } else {
-        setError(data.message)
+        setError(data.message || 'انتهت محاولات اليوم')
       }
     } catch (err) {
       setError('حدث خطأ أثناء التحديث')
@@ -78,7 +83,7 @@ export default function DailyReward() {
       <h1 className="reward-title">🎁 هدايا يومية</h1>
       
       <div className="reward-card">
-        <p>شاهد إعلانات لربح نقاط XP</p>
+        <p style={{ marginBottom: '15px' }}>شاهد إعلانات لربح نقاط XP وشراء العروض</p>
         <div className="ads-counter-info">
           <span>التقدم اليومي:</span>
           <span>{adsCount} / {MAX_ADS}</span>
@@ -99,16 +104,16 @@ export default function DailyReward() {
         className={`claim-btn ${adsCount >= MAX_ADS ? 'disabled' : ''}`}
       >
         {isLoading ? (
-          <div className="spinner-small"></div>
+          <div className="loading-spinner" style={{width: '20px', height: '20px', borderTopColor: '#000'}}></div>
         ) : adsCount >= MAX_ADS ? (
           '✅ اكتملت إعلانات اليوم'
         ) : (
-          '📺 شاهد إعلان لتربح'
+          '📺 شاهد إعلان لتربح (1 XP)'
         )}
       </button>
 
       {adsCount >= MAX_ADS && (
-        <p className="reset-info">يتجدد العداد تلقائياً كل يوم</p>
+        <p className="reset-info">يتجدد العداد تلقائياً عند منتصف الليل</p>
       )}
     </div>
   )
