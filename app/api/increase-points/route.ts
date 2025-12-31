@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 
 const MAX_ADS = 7;
 
+// دالة GET لجلب حالة المستخدم وعدد الإعلانات المشاهدة
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url)
   const telegramId = Number(searchParams.get('telegramId'))
@@ -29,12 +30,15 @@ export async function GET(req: Request) {
   }
 }
 
+// دالة POST للتعامل مع العمليات (إنشاء، حظر، مشاهدة، شراء)
 export async function POST(req: Request) {
   try {
     const body = await req.json()
     const telegramId = Number(body.id || body.telegramId)
 
-    // 1. إنشاء أو تحديث بيانات المستخدم الأساسية
+    if (!telegramId) return NextResponse.json({ error: 'ID غير صالح' }, { status: 400 });
+
+    // 1. جلب أو إنشاء المستخدم
     const user = await prisma.user.upsert({
       where: { telegramId },
       update: {
@@ -62,7 +66,7 @@ export async function POST(req: Request) {
       }, { status: 403 })
     }
 
-    // 3. معالجة مشاهدة الإعلان (إضافة نقاط)
+    // 3. عملية مشاهدة الإعلان (زيادة نقاط)
     if (body.action === 'watch_ad') {
       const now = new Date()
       const lastAdDate = user.lastAdDate ? new Date(user.lastAdDate) : new Date(0)
@@ -84,7 +88,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: true, newCount: updated.adsCount, points: updated.points })
     }
 
-    // 4. معالجة عملية الشراء (خصم نقاط)
+    // 4. عملية الشراء (خصم نقاط)
     if (body.action === 'purchase_product') {
       const productPrice = Number(body.price)
       
@@ -104,11 +108,11 @@ export async function POST(req: Request) {
       })
     }
 
-    // العودة ببيانات المستخدم العادية
+    // الحالة الافتراضية: العودة ببيانات المستخدم
     return NextResponse.json(user)
 
   } catch (e) {
     console.error(e)
-    return NextResponse.json({ error: 'خطأ في السيرفر' }, { status: 500 })
+    return NextResponse.json({ error: 'خطأ داخلي في النظام' }, { status: 500 })
   }
 }
