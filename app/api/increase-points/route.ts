@@ -36,69 +36,56 @@ export async function POST(req: Request) {
 
     if (user.status === 1) return NextResponse.json({ error: 'محظور', status: 1 }, { status: 403 })
 
-    // --- 1. منطق استرداد الكود (حل مشكلة المسافات الخفية للهاتف) ---
     if (body.action === 'redeem_code') {
       const inputCode = String(body.code).trim().toUpperCase();
 
-      // البحث عن الكود بطريقة مرنة تتجاهل المسافات في قاعدة البيانات
-      const giftCodes = await prisma.giftCode.findMany();
-      const gift = giftCodes.find(g => g.code.trim().toUpperCase() === inputCode);
+      // جلب جميع الأكواد المتاحة في القاعدة التي يتصل بها التطبيق حالياً
+      const allCodes = await prisma.giftCode.findMany();
+      
+      // إذا كانت القاعدة فارغة تماماً
+      if (allCodes.length === 0) {
+        return NextResponse.json({ success: false, message: 'قاعدة الأكواد فارغة تماماً في هذا السيرفر' });
+      }
+
+      // البحث عن الكود مع تنظيف شامل
+      const gift = allCodes.find(g => g.code.replace(/\s+/g, '') === inputCode);
 
       if (!gift) {
-        return NextResponse.json({ success: false, message: 'كود غير صحيح أو غير موجود' });
+        // رسالة تخبرك بالأكواد الموجودة فعلياً (للتصحيح)
+        const available = allCodes.map(c => c.code).join(', ');
+        return NextResponse.json({ 
+          success: false, 
+          message: `الكود ${inputCode} غير موجود. المتاح هو: [${available}]` 
+        });
       }
 
-      // التحقق من الصلاحية
-      if (gift.currentUses >= gift.maxUses) {
-        return NextResponse.json({ success: false, message: 'انتهت كمية هذا الكود' });
-      }
+      if (gift.currentUses >= gift.maxUses) return NextResponse.json({ success: false, message: 'انتهت الكمية' });
 
-      // فحص الاستخدام السابق
       const alreadyUsed = await prisma.usedCode.findFirst({
-        where: {
-          userId: telegramId,
-          codeId: gift.id
-        }
+        where: { userId: telegramId, codeId: gift.id }
       });
 
-      if (alreadyUsed) {
-        return NextResponse.json({ success: false, message: 'لقد استعملت هذا الكود من قبل' });
-      }
+      if (alreadyUsed) return NextResponse.json({ success: false, message: 'استعملته مسبقاً' });
 
       try {
         const result = await prisma.$transaction([
-          prisma.user.update({
-            where: { telegramId },
-            data: { points: { increment: gift.points } }
-          }),
-          prisma.giftCode.update({
-            where: { id: gift.id },
-            data: { currentUses: { increment: 1 } }
-          }),
-          prisma.usedCode.create({
-            data: { userId: telegramId, codeId: gift.id }
-          })
+          prisma.user.update({ where: { telegramId }, data: { points: { increment: gift.points } } }),
+          prisma.giftCode.update({ where: { id: gift.id }, data: { currentUses: { increment: 1 } } }),
+          prisma.usedCode.create({ data: { userId: telegramId, codeId: gift.id } })
         ]);
 
-        return NextResponse.json({ 
-          success: true, 
-          newPoints: result[0].points, 
-          amount: gift.points 
-        });
+        return NextResponse.json({ success: true, newPoints: result[0].points, amount: gift.points });
       } catch (e) {
-        return NextResponse.json({ success: false, message: 'خطأ في تحديث البيانات' });
+        return NextResponse.json({ success: false, message: 'خطأ أثناء التحديث' });
       }
     }
 
-    // --- 2. منطق مشاهدة الإعلانات ---
     if (body.action === 'watch_ad') {
       const now = new Date();
       const lastAdDate = user.lastAdDate ? new Date(user.lastAdDate) : new Date(0);
       const isNewDay = now.toDateString() !== lastAdDate.toDateString();
       let currentCount = isNewDay ? 0 : (user.adsCount || 0);
-
       if (currentCount >= MAX_ADS) return NextResponse.json({ success: false, message: 'انتهت المحاولات' });
-
       const updated = await prisma.user.update({
         where: { telegramId },
         data: { points: { increment: 1 }, adsCount: currentCount + 1, lastAdDate: now }
@@ -106,7 +93,6 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: true, newCount: updated.adsCount, points: updated.points })
     }
 
-    // --- 3. منطق شراء المنتجات ---
     if (body.action === 'purchase_product') {
       if (user.points < body.price) return NextResponse.json({ success: false, message: 'رصيد غير كافٍ' }, { status: 400 });
       const updated = await prisma.user.update({
