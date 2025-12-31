@@ -1,12 +1,13 @@
 .reward-container {
   padding: 20px;
   text-align: center;
+  color: white;
 }
 
 .reward-title {
   font-size: 24px;
   margin-bottom: 20px;
-  color: #fff;
+  font-weight: bold;
 }
 
 .reward-card {
@@ -20,23 +21,23 @@
 .ads-counter-info {
   display: flex;
   justify-content: space-between;
-  margin: 15px 0 8px;
+  margin-bottom: 10px;
   font-size: 14px;
   color: #ccc;
 }
 
 .progress-bar-container {
   width: 100%;
-  height: 10px;
+  height: 12px;
   background: #333;
-  border-radius: 5px;
+  border-radius: 6px;
   overflow: hidden;
 }
 
 .progress-bar-fill {
   height: 100%;
   background: linear-gradient(90deg, #f1c40f, #f39c12);
-  transition: width 0.4s ease-out;
+  transition: width 0.4s ease;
 }
 
 .claim-btn {
@@ -49,89 +50,50 @@
   font-weight: bold;
   font-size: 16px;
   cursor: pointer;
-  transition: opacity 0.2s;
+  transition: transform 0.2s, background 0.2s;
+}
+
+.claim-btn:active {
+  transform: scale(0.98);
 }
 
 .claim-btn.disabled {
-  background: #555;
-  color: #aaa;
+  background: #444;
+  color: #888;
   cursor: not-allowed;
 }
 
 .notification-toast {
   background: #27ae60;
   color: white;
-  padding: 10px;
-  border-radius: 8px;
-  margin-bottom: 15px;
-  animation: fadeIn 0.3s;
+  padding: 12px;
+  border-radius: 10px;
+  margin-top: 15px;
+  animation: fadeIn 0.3s ease;
 }
 
 .reset-info {
   margin-top: 15px;
   font-size: 12px;
-  color: #777;
+  color: #666;
 }
 
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(-10px); }
   to { opacity: 1; transform: translateY(0); }
-}  position: relative;
-  z-index: 1;
-  font-weight: 600;
-  letter-spacing: 0.5px;
-  padding: 0 20px;
 }
 
-.reward-card {
-  background: rgba(255, 255, 255, 0.12); /* Slightly darker */
-  padding: 25px;
-  border-radius: 14px;
-  margin-bottom: 1.5rem; /* Reduced spacing */
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255,255,255,0.15);
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
-  width: 90%;
-  max-width: 450px; /* Slightly narrower */
-  position: relative;
-  z-index: 1;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+.loading-spinner {
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(0,0,0,0.1);
+  border-top: 3px solid #000;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  display: inline-block;
 }
 
-/* Rest of the CSS remains the same as the previous elegant version */
-.claim-btn {
-  background: linear-gradient(45deg, #4CAF50, #8BC34A);
-  color: white;
-  border: none;
-  padding: 16px 32px; /* Slightly adjusted */
-  font-size: 1.1rem;
-  border-radius: 50px;
-  cursor: pointer;
-  transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
-  width: 100%;
-  max-width: 280px; /* Slightly narrower */
-  margin: 0 auto;
-  box-shadow: 0 4px 20px rgba(76, 175, 80, 0.3);
-  position: relative;
-  overflow: hidden;
-  z-index: 1;
-  font-weight: 600;
-  letter-spacing: 0.5px;
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
-
-.notification {
-  background: rgba(76, 175, 80, 0.9);
-  color: white;
-  padding: 14px 22px; /* Slightly adjusted */
-  border-radius: 8px;
-  margin: 20px auto; /* Reduced spacing */
-  max-width: 320px; /* Slightly narrower */
-  animation: fadeIn 0.5s, slideUp 0.5s;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-  backdrop-filter: blur(5px);
-  border: 1px solid rgba(255,255,255,0.2);
-  position: relative;
-  overflow: hidden;
-}
-
-/* Keep all animations and other elements the same */
