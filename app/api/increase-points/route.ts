@@ -28,6 +28,7 @@ export async function POST(req: Request) {
     const body = await req.json()
     const telegramId = Number(body.telegramId || body.id)
 
+    // التأكد من وجود المستخدم
     const user = await prisma.user.upsert({
       where: { telegramId },
       update: { username: body.username, firstName: body.first_name || body.firstName },
@@ -36,58 +37,76 @@ export async function POST(req: Request) {
 
     if (user.status === 1) return NextResponse.json({ error: 'محظور', status: 1 }, { status: 403 })
 
+    // --- منطق استرداد الكود الرقمي (الحل النهائي) ---
     if (body.action === 'redeem_code') {
-      // 1. تنظيف كلي للمدخل من المستخدم (حذف أي مسافات حتى المخفية)
-      const inputCode = String(body.code).replace(/\s+/g, '').toUpperCase();
+      // تحويل مدخل المستخدم إلى رقم صحيح
+      const inputCodeNumeric = parseInt(String(body.code).replace(/\s+/g, ''));
 
-      // 2. جلب جميع الأكواد من القاعدة
-      const allCodes = await prisma.giftCode.findMany();
-      
-      // 3. البحث اليدوي الدقيق مع تنظيف البيانات المخزنة
-      const gift = allCodes.find(g => {
-        const cleanedDbCode = String(g.code).replace(/\s+/g, '').toUpperCase();
-        return cleanedDbCode === inputCode;
+      if (isNaN(inputCodeNumeric)) {
+        return NextResponse.json({ success: false, message: 'خطأ: الكود يجب أن يكون أرقاماً فقط' });
+      }
+
+      // البحث في قاعدة البيانات عن الكود الرقمي المطابق
+      const gift = await prisma.giftCode.findUnique({
+        where: { code: inputCodeNumeric }
       });
 
       if (!gift) {
-        return NextResponse.json({ success: false, message: 'كود غير صالح - لم يتم العثور عليه' });
+        return NextResponse.json({ success: false, message: 'هذا الكود الرقمي غير موجود' });
       }
 
-      // التحقق من الأرقام (تأكد أنها أرقام وليست نصوص)
-      const max = Number(gift.maxUses);
-      const current = Number(gift.currentUses);
-
-      if (current >= max) {
-        return NextResponse.json({ success: false, message: 'انتهت صلاحية الكود' });
+      // التحقق من الصلاحية
+      if (gift.currentUses >= gift.maxUses) {
+        return NextResponse.json({ success: false, message: 'انتهت صلاحية هذا الكود' });
       }
 
+      // التحقق من الاستخدام المسبق
       const alreadyUsed = await prisma.usedCode.findFirst({
-        where: { userId: telegramId, codeId: gift.id }
+        where: {
+          userId: telegramId,
+          codeId: gift.id
+        }
       });
 
       if (alreadyUsed) {
-        return NextResponse.json({ success: false, message: 'استخدمت الكود مسبقاً' });
+        return NextResponse.json({ success: false, message: 'لقد استعملت هذا الكود من قبل' });
       }
 
+      // تنفيذ عملية الشحن
       try {
         const result = await prisma.$transaction([
-          prisma.user.update({ where: { telegramId }, data: { points: { increment: Number(gift.points) } } }),
-          prisma.giftCode.update({ where: { id: gift.id }, data: { currentUses: { increment: 1 } } }),
-          prisma.usedCode.create({ data: { userId: telegramId, codeId: gift.id } })
+          prisma.user.update({
+            where: { telegramId },
+            data: { points: { increment: gift.points } }
+          }),
+          prisma.giftCode.update({
+            where: { id: gift.id },
+            data: { currentUses: { increment: 1 } }
+          }),
+          prisma.usedCode.create({
+            data: { userId: telegramId, codeId: gift.id }
+          })
         ]);
 
-        return NextResponse.json({ success: true, newPoints: result[0].points, amount: gift.points });
-      } catch (err) {
-        return NextResponse.json({ success: false, message: 'خطأ أثناء تنفيذ العملية' });
+        return NextResponse.json({ 
+          success: true, 
+          newPoints: result[0].points, 
+          amount: gift.points 
+        });
+      } catch (transactionError) {
+        return NextResponse.json({ success: false, message: 'حدث خطأ فني أثناء الشحن' });
       }
     }
 
+    // --- منطق الإعلانات ---
     if (body.action === 'watch_ad') {
       const now = new Date();
       const lastAdDate = user.lastAdDate ? new Date(user.lastAdDate) : new Date(0);
       const isNewDay = now.toDateString() !== lastAdDate.toDateString();
       let currentCount = isNewDay ? 0 : (user.adsCount || 0);
-      if (currentCount >= MAX_ADS) return NextResponse.json({ success: false, message: 'انتهت المحاولات' });
+
+      if (currentCount >= MAX_ADS) return NextResponse.json({ success: false, message: 'انتهت المحاولات لليوم' });
+
       const updated = await prisma.user.update({
         where: { telegramId },
         data: { points: { increment: 1 }, adsCount: currentCount + 1, lastAdDate: now }
@@ -95,8 +114,9 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: true, newCount: updated.adsCount, points: updated.points })
     }
 
+    // --- منطق الشراء ---
     if (body.action === 'purchase_product') {
-      if (user.points < body.price) return NextResponse.json({ success: false, message: 'رصيد غير كافٍ' }, { status: 400 });
+      if (user.points < body.price) return NextResponse.json({ success: false, message: 'رصيد غير كافٍ' });
       const updated = await prisma.user.update({
         where: { telegramId },
         data: { points: { decrement: body.price } }
@@ -106,6 +126,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json(user)
   } catch (e) {
-    return NextResponse.json({ error: 'خطأ داخلي' }, { status: 500 })
+    console.error("Critical API Error:", e);
+    return NextResponse.json({ error: 'خطأ داخلي في النظام' }, { status: 500 })
   }
 }
