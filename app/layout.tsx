@@ -17,19 +17,8 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <head>
-        {/* سكريبت Adsgram الرسمي لإظهار الإعلانات */}
-        <Script 
-          src="https://sad.adsgram.ai/js/adsgram-ad-sdk.js" 
-          strategy="beforeInteractive" 
-        />
-      </head>
       <body className={inter.className}>
-        {/* سكريبت تليجرام الأصلي الخاص بك */}
-        <Script 
-          src="https://telegram.org/js/telegram-web-app.js" 
-          strategy="beforeInteractive" 
-        />
+        <Script src="https://telegram.org/js/telegram-web-app.js" strategy="beforeInteractive" />
         {children}
       </body>
     </html>
